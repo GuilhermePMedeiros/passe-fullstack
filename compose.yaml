@@ -1,0 +1,82 @@
+name: passe
+
+services:
+  db:
+    image: mysql:8.0.46
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_as_ci"]
+    environment:
+      MYSQL_DATABASE: passedb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-passe_root_local}
+      MYSQL_USER: ${DB_USERNAME:-passe_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-passe_app_local}
+      MYSQL_TEST_USER: ${TEST_DB_USERNAME:-passe_test}
+      MYSQL_TEST_PASSWORD: ${TEST_DB_PASSWORD:-passe_test_local}
+      TZ: America/Sao_Paulo
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/scripts/docker-init.sh:/docker-entrypoint-initdb.d/01-tests.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database=passedb --execute="SELECT 1" > /dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:mysql://db:3306/passedb
+      DB_USERNAME: ${DB_USERNAME:-passe_app}
+      DB_PASSWORD: ${DB_PASSWORD:-passe_app_local}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      TZ: America/Sao_Paulo
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET / HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3; read -r protocol status rest <&3; [[ "$$protocol" == HTTP/* ]]'
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  tests:
+    profiles: [tools]
+    build:
+      context: ./backend
+      target: tests
+    environment:
+      TEST_DB_URL: jdbc:mysql://db:3306/passedb_test
+      TEST_DB_USERNAME: ${TEST_DB_USERNAME:-passe_test}
+      TEST_DB_PASSWORD: ${TEST_DB_PASSWORD:-passe_test_local}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      TZ: America/Sao_Paulo
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./docs/evidencias/mysql:/app/target/surefire-reports
+
+volumes:
+  mysql_data:

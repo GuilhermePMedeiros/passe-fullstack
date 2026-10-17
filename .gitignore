@@ -1,0 +1,11 @@
+.backups/
+.rebuild/
+.metadata/
+/docs/
+/AGENTS.md
+.env
+.env.*
+!.env.example
+**/target/
+**/node_modules/
+**/dist/
