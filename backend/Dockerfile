@@ -1,17 +1,16 @@
-FROM eclipse-temurin:21-jdk-jammy AS dependencies
+FROM maven:3.10.0-eclipse-temurin-21-noble AS dependencies
 WORKDIR /app
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
-RUN sh ./mvnw -B -ntp dependency:go-offline
+COPY pom.xml ./
+RUN mvn -B -ntp dependency:go-offline
 
 FROM dependencies AS source
 COPY src src
 
 FROM source AS tests
-CMD ["sh", "./mvnw", "-B", "-ntp", "verify"]
+CMD ["mvn", "-B", "-ntp", "verify"]
 
 FROM source AS package
-RUN sh ./mvnw -B -ntp -DskipTests package
+RUN mvn -B -ntp -DskipTests package
 
 FROM eclipse-temurin:21-jre-jammy AS runtime
 WORKDIR /app

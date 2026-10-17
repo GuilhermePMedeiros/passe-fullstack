@@ -1,7 +1,10 @@
 ﻿# PasseBackend
 
 Estrutura inicial do Passe, sem funcionalidades de negócio.
-Java 21, Spring Boot 3.5.16, Maven Wrapper 3.10.0 e MySQL 8.0.46.
+Java 21, Spring Boot 3.5.16, Maven 3.10.0 e MySQL 8.0.46.
+Docker usa Maven já instalado na imagem oficial de construção; Maven Wrapper
+3.10.0 é usado somente no desenvolvimento local. A execução usa uma imagem JRE 21
+separada, sem Maven nem código-fonte.
 
 ## 1. Pré-requisitos
 

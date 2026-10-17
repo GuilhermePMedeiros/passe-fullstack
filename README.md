@@ -13,7 +13,7 @@ No Windows, Docker Desktop utiliza WSL 2/virtualização habilitada.
 Se o instalador ou a ativação do componente Windows pedir reinicialização,
 reinicie uma vez e abra Docker Desktop antes de executar o comando abaixo.
 
-O Compose fornece Java 21, Maven Wrapper 3.10.0, Node.js 22.12.0 e MySQL 8.0.46;
+O Compose fornece Java 21, Maven 3.10.0, Node.js 22.12.0 e MySQL 8.0.46;
 não é necessário instalar esses runtimes no computador para esse caminho.
 Spring Boot 3.5.16, React 19, TypeScript 5.8 e Vite 6 respeitam a seção
 **Stack obrigatória** do enunciado. Versões npm exatas estão em package-lock.json.
@@ -47,6 +47,13 @@ de terceiros e as aplicações são construídas a partir deste repositório.
 O Compose espera o MySQL ficar disponível antes de iniciar a API, e a API antes
 do frontend, conforme a [documentação Docker](https://docs.docker.com/compose/how-tos/startup-order/).
 
+O backend é compilado na imagem oficial `maven:3.10.0-eclipse-temurin-21-noble`,
+com Maven já instalado, sem executar o Maven Wrapper durante o build ou os testes
+em containers. A imagem final `eclipse-temurin:21-jre-jammy` recebe somente o JAR
+e executa com usuário sem privilégios. O Wrapper continua disponível para
+desenvolvimento local. Imagens e dependências ainda exigem acesso à internet;
+não há garantia de funcionamento offline.
+
 - Frontend: **http://localhost:5173**.
 - Origem da API: **http://localhost:8080**. Prefixo futuro: `/api/v1`.
 - Banco pelo Workbench: localhost, porta 3307, usuário passe_app,
@@ -54,6 +61,10 @@ do frontend, conforme a [documentação Docker](https://docs.docker.com/compose/
 
 A API retorna 404 na raiz porque ainda não há controllers de negócio.
 O frontend exibe somente a estrutura inicial. Isso não comprova os roteiros da prova.
+O healthcheck da API aceita HTTP 2xx ou esse 404; respostas 5xx falham.
+O MySQL é verificado com `SELECT 1` autenticado no banco da aplicação, e o Nginx
+com uma requisição HTTP à página inicial. A checagem HTTP não monitora continuamente
+a conexão da API ao banco; os testes de integração abaixo verificam a conexão real.
 
 Para conferir serviços e erros:
 
@@ -61,6 +72,29 @@ Para conferir serviços e erros:
 docker compose ps
 docker compose logs --tail 100 backend db frontend
 ```
+
+Para auditar o build sem cache, na raiz (com as portas 3307, 8080 e 5173 livres):
+
+```sh
+docker compose config --quiet
+docker compose build --no-cache
+docker compose up -d --wait --wait-timeout 300
+docker compose ps
+docker compose logs --tail 100
+```
+
+O build do frontend executa `npm ci`, `npm run lint` e `npm run build` dentro da
+imagem Node. O build do JAR compila também os testes, mas a execução deles fica
+no serviço `tests`, pois requer o MySQL em execução. Execute a seção seguinte
+para validar o backend; subir os serviços, sozinho, não comprova os testes.
+
+Validação em 17/10/2026: configuração Compose e build sem cache passaram em
+containers Linux no Docker Desktop/WSL 2. Uma cópia dos arquivos versionados com
+esta correção, sem `.env`, `node_modules` ou `target`, iniciou com volume novo e
+os três serviços saudáveis. Os três testes de integração passaram nessa cópia,
+sem falhas ou testes ignorados. Isso ainda não é um ensaio em VM Ubuntu 24.04 limpa.
+O npm emitiu `EBADENGINE` para `eslint-visitor-keys@5.0.1` com Node 22.12.0;
+lint e build passaram, mas o aviso de compatibilidade permanece pendente.
 
 Para parar preservando dados:
 
@@ -183,3 +217,7 @@ Nesta revisão foram aceitos ambiente isolado, padrões fictícios de desenvolvi
 e testes somente leitura. A classe original de testes vazia foi preservada;
 novos testes estão em MySqlIntegrationTests. Nenhuma funcionalidade de negócio
 foi implementada. O candidato deve revisar e compreender o conteúdo antes da entrega.
+Na correção Docker de 17/10/2026, Codex substituiu o uso do Wrapper na imagem
+de build por Maven oficial com Java 21, restringiu o healthcheck HTTP e atualizou
+as instruções. A URL Maven 3.10.0 foi consultada e respondeu HTTP 200; a causa
+do download malsucedido no ambiente original não foi reproduzida.
