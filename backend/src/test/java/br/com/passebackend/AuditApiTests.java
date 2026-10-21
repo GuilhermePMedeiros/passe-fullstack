@@ -35,6 +35,7 @@ class AuditApiTests {
     @Autowired ObjectMapper mapper;
     @MockitoBean PlayerRepository players;
     @MockitoBean ClubRepository clubs;
+    @MockitoBean br.com.passebackend.contract.ContractService contracts;
     private Map<Integer, Player> playerRows;
     private Map<Integer, Club> clubRows;
 
@@ -82,6 +83,7 @@ class AuditApiTests {
             return result;
         });
         when(players.findById(any())).thenAnswer(i -> Optional.ofNullable(playerRows.get(i.getArgument(0))));
+        when(players.findActiveForUpdate(any())).thenAnswer(i -> Optional.ofNullable(playerRows.get(i.getArgument(0))));
         when(players.save(any())).thenAnswer(i -> {
             Player p = i.getArgument(0);
             if (p.getId() == null) p.setId(playerIds.incrementAndGet());

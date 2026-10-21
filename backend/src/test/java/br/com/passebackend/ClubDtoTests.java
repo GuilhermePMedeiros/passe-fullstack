@@ -38,6 +38,9 @@ class ClubDtoTests {
     @Mock
     private PlayerService playerService;
 
+    @Mock
+    private br.com.passebackend.contract.ContractService contractService;
+
     @InjectMocks
     private ClubService service;
 
