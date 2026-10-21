@@ -13,6 +13,12 @@ import jakarta.persistence.criteria.Predicate;
 public interface PlayerRepository 
 	extends JpaRepository<Player, Integer>,
 			JpaSpecificationExecutor<Player> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select p from Player p where p.id = :id and p.deletedAt is null")
+    java.util.Optional<Player> findActiveForUpdate(@org.springframework.data.repository.query.Param("id") Integer id);
+
+    long countByClubIdAndDeletedAtIsNull(Integer clubId);
+
     List<Player> findByClubIdAndDeletedAtIsNull(Integer clubId);
 
     List<Player> findByClubIdInAndDeletedAtIsNull(List<Integer> clubIds);
