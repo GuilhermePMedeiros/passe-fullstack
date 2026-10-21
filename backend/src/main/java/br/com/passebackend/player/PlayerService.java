@@ -38,6 +38,9 @@ public class PlayerService {
     @Autowired
     private ClubService clubService;
 
+    @Autowired
+    private br.com.passebackend.lineup.LineupRepository lineups;
+
     @Transactional
     public Player getActivePlayerForUpdate(Integer id) {
         if (id == null || id <= 0) throw new ResourceNotFoundException("Jogador não encontrado.");
@@ -109,6 +112,9 @@ public class PlayerService {
 
         player.setCondition(condition);
 
+        if (condition == PlayerCondition.SICK) {
+            lineups.deleteByPlayerId(player.getId());
+        }
         
         return toResponse(repository.save(player));
     }
