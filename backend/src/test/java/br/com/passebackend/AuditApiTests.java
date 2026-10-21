@@ -36,6 +36,7 @@ class AuditApiTests {
     @MockitoBean PlayerRepository players;
     @MockitoBean ClubRepository clubs;
     @MockitoBean br.com.passebackend.contract.ContractService contracts;
+    @MockitoBean br.com.passebackend.lineup.LineupRepository lineups;
     private Map<Integer, Player> playerRows;
     private Map<Integer, Club> clubRows;
 
