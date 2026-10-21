@@ -3,6 +3,11 @@ package br.com.passebackend.nucleo.util;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public final class StringUtils {
+
+    public static String normalizeForOrdering(String name) {
+        return java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{Mn}+", "").toLowerCase(java.util.Locale.ROOT);
+    }
 	
 	public static boolean isBlank(String str) {
 		return str == null || str.isEmpty() || str.isBlank();
