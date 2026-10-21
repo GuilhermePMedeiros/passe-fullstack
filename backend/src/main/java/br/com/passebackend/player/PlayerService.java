@@ -39,6 +39,20 @@ public class PlayerService {
     private ClubService clubService;
 
     @Transactional
+    public Player getActivePlayerForUpdate(Integer id) {
+        if (id == null || id <= 0) throw new ResourceNotFoundException("Jogador não encontrado.");
+        Player player = repository.findActiveForUpdate(id).orElseThrow(
+                () -> new ResourceNotFoundException("Jogador não encontrado."));
+        if (player.getDeletedAt() != null) throw new ResourceNotFoundException("Jogador não encontrado.");
+        return player;
+    }
+
+    @Transactional(readOnly = true)
+    public long countPlayersByClubId(Integer clubId) {
+        return repository.countByClubIdAndDeletedAtIsNull(clubId);
+    }
+
+    @Transactional
     public PlayerResponseDTO createPlayer(PlayerRequestDTO request) {
         validatePlayerCreate(request);
 
@@ -72,7 +86,7 @@ public class PlayerService {
 
     @Transactional
     public PlayerResponseDTO updatePlayer(Integer id, PlayerRequestDTO request) {
-        Player player = findActivePlayer(id);
+        Player player = getActivePlayerForUpdate(id);
 
         validatePlayerPut(request, player);
 
@@ -83,7 +97,7 @@ public class PlayerService {
 
     @Transactional
     public PlayerResponseDTO updatePlayerCondition(Integer id, PlayerCondition condition) {
-        Player player = findActivePlayer(id);
+        Player player = getActivePlayerForUpdate(id);
 
         if (condition == null) {
             throw new IllegalArgumentException("Condição obrigatória.");
@@ -94,6 +108,7 @@ public class PlayerService {
         }
 
         player.setCondition(condition);
+
         
         return toResponse(repository.save(player));
     }
@@ -101,7 +116,7 @@ public class PlayerService {
     @Transactional
     public void deletePlayer(Integer id) {
 
-        Player player = findActivePlayer(id);
+        Player player = getActivePlayerForUpdate(id);
 
         if (player.getClub() != null) {
 

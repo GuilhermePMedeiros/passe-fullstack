@@ -32,6 +32,15 @@ public class ClubService {
     @Lazy
     private PlayerService playerService;
 
+    @Autowired
+    private br.com.passebackend.contract.ContractService contractService;
+
+    @Transactional
+    public Club getClubForUpdate(Integer id) {
+        return repository.findForUpdate(id).orElseThrow(
+                () -> new ResourceNotFoundException("Clube não encontrado."));
+    }
+
     @Transactional
     public ClubResponseDTO createClub(ClubRequestDTO request) {
         if (request == null) {
@@ -256,11 +265,16 @@ public class ClubService {
 
         List<PlayerResponseDTO> squad = new ArrayList<>();
 
+        Map<Integer, br.com.passebackend.contract.dto.ContractResponseDTO> contracts =
+                includePlayers && !players.isEmpty() ? contractService.getClubContracts(club.getId()) : Map.of();
+
         for (Player player : players) {
             squadValue = squadValue.add(playerService.calculateMarketValue(player));
 
             if (includePlayers) {
-                squad.add(playerService.toResponse(player));
+                PlayerResponseDTO playerResponse = playerService.toResponse(player);
+                playerResponse.setContract(contracts.get(player.getId()));
+                squad.add(playerResponse);
             }
         }
 
