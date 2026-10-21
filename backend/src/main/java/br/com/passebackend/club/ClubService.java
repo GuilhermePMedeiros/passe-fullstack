@@ -1,5 +1,9 @@
 package br.com.passebackend.club;
 
+import br.com.passebackend.contract.ContractService;
+import br.com.passebackend.contract.dto.ContractResponseDTO;
+import br.com.passebackend.nucleo.util.StringUtils;
+
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -33,7 +37,7 @@ public class ClubService {
     private PlayerService playerService;
 
     @Autowired
-    private br.com.passebackend.contract.ContractService contractService;
+    private ContractService contractService;
 
     @Transactional
     public Club getClubForUpdate(Integer id) {
@@ -125,10 +129,7 @@ public class ClubService {
         }
 
         Comparator<ClubResponseDTO> byName = (first, second) -> {
-            String firstName = normalizeForSort(first.getName());
-            String secondName = normalizeForSort(second.getName());
-            
-            int comparison = firstName.compareTo(secondName);
+            int comparison = StringUtils.compareNames(first.getName(), second.getName());
 
             if (comparison != 0) {
                 return comparison;
@@ -258,14 +259,14 @@ public class ClubService {
     private ClubResponseDTO toResponse(Club club, boolean includePlayers, List<Player> players) {
 
         players.sort(Comparator.comparingInt((Player player) -> player.getPosition().getOrder())
-                .thenComparing(player -> normalizeForSort(player.getName()))
+                .thenComparing(Player::getName, StringUtils::compareNames)
                 .thenComparing(Player::getId));
 
         BigDecimal squadValue = new BigDecimal("0.00");
 
         List<PlayerResponseDTO> squad = new ArrayList<>();
 
-        Map<Integer, br.com.passebackend.contract.dto.ContractResponseDTO> contracts =
+        Map<Integer, ContractResponseDTO> contracts =
                 includePlayers && !players.isEmpty() ? contractService.getClubContracts(club.getId()) : Map.of();
 
         for (Player player : players) {
@@ -294,10 +295,4 @@ public class ClubService {
         return response;
     }
 
-    private String normalizeForSort(String name) {
-        String text = Normalizer.normalize(name, Normalizer.Form.NFD);
-        text = text.replaceAll("\\p{Mn}+", "");
-
-        return text.toLowerCase(Locale.ROOT);
-    }
 }

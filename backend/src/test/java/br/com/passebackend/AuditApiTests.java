@@ -1,5 +1,11 @@
 package br.com.passebackend;
 
+import br.com.passebackend.contract.ContractService;
+import br.com.passebackend.lineup.LineupRepository;
+import br.com.passebackend.player.enums.PlayerCondition;
+import br.com.passebackend.player.enums.PlayerPosition;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +41,8 @@ class AuditApiTests {
     @Autowired ObjectMapper mapper;
     @MockitoBean PlayerRepository players;
     @MockitoBean ClubRepository clubs;
-    @MockitoBean br.com.passebackend.contract.ContractService contracts;
-    @MockitoBean br.com.passebackend.lineup.LineupRepository lineups;
+    @MockitoBean ContractService contracts;
+    @MockitoBean LineupRepository lineups;
     private Map<Integer, Player> playerRows;
     private Map<Integer, Club> clubRows;
 
@@ -48,8 +54,8 @@ class AuditApiTests {
         AtomicInteger clubIds = new AtomicInteger();
         when(players.findActivePlayers(any(), any(), any(), any(), any(), any())).thenAnswer(i -> {
             List<Player> result = new ArrayList<>();
-            br.com.passebackend.player.enums.PlayerPosition position = i.getArgument(0);
-            br.com.passebackend.player.enums.PlayerCondition condition = i.getArgument(1);
+            PlayerPosition position = i.getArgument(0);
+            PlayerCondition condition = i.getArgument(1);
             Boolean free = i.getArgument(2);
             Integer clubId = i.getArgument(3);
             Integer minAge = i.getArgument(4);
@@ -356,7 +362,7 @@ class AuditApiTests {
     }
 
     @Test void clubIntegrityConflictReturns409() throws Exception {
-        doThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key")).when(clubs).save(any());
+        doThrow(new DataIntegrityViolationException("duplicate key")).when(clubs).save(any());
         mvc.perform(post("/api/v1/clubs").contentType("application/json")
                 .content("{\"name\":\"Águias FC\",\"acronym\":\"AGU\"}"))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.message").isNotEmpty())

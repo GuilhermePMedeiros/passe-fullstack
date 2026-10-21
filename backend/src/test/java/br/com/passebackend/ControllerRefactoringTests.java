@@ -1,5 +1,8 @@
 package br.com.passebackend;
 
+import java.util.Map;
+import org.springframework.http.ResponseEntity;
+
 import java.sql.SQLException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -108,14 +111,14 @@ class ControllerRefactoringTests {
     void sharedResponsesKeepCodesBodiesAndErrorFallback() {
         BaseController base = new BaseController() {};
         var ok = ReflectionTestUtils.invokeMethod(base, "success", "body");
-        assertThat(ok).isEqualTo(org.springframework.http.ResponseEntity.ok("body"));
-        org.springframework.http.ResponseEntity<?> empty = ReflectionTestUtils.invokeMethod(base, "success");
+        assertThat(ok).isEqualTo(ResponseEntity.ok("body"));
+        ResponseEntity<?> empty = ReflectionTestUtils.invokeMethod(base, "success");
         assertThat(empty.getStatusCode().value()).isEqualTo(204);
         assertThat(empty.getBody()).isNull();
-        org.springframework.http.ResponseEntity<?> error = ReflectionTestUtils.invokeMethod(
+        ResponseEntity<?> error = ReflectionTestUtils.invokeMethod(
                 base, "error", HttpStatus.BAD_REQUEST, " ");
         assertThat(error.getStatusCode().value()).isEqualTo(400);
-        assertThat(error.getBody()).isEqualTo(java.util.Map.of("message", "Requisição inválida."));
+        assertThat(error.getBody()).isEqualTo(Map.of("message", "Requisição inválida."));
     }
 
     @ParameterizedTest

@@ -1,14 +1,17 @@
 package br.com.passebackend.contract;
 
+import br.com.passebackend.contract.enums.ContractStatus;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ContractRepository extends JpaRepository<Contract, Integer> {
-    java.util.List<Contract> findByPlayerIdAndStatus(Integer playerId,
-            br.com.passebackend.contract.enums.ContractStatus status);
+    List<Contract> findByPlayerIdAndStatus(Integer playerId,
+            ContractStatus status);
 
-    java.util.List<Contract> findByClubIdAndStatus(Integer clubId,
-            br.com.passebackend.contract.enums.ContractStatus status);
+    List<Contract> findByClubIdAndStatus(Integer clubId,
+            ContractStatus status);
 
     boolean existsByPlayerIdAndStatus(Integer playerId,
-            br.com.passebackend.contract.enums.ContractStatus status);
+            ContractStatus status);
 }

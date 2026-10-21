@@ -1,9 +1,13 @@
 package br.com.passebackend.player;
 
+import br.com.passebackend.lineup.LineupRepository;
+import br.com.passebackend.nucleo.util.DateTimeUtils;
+import java.util.Arrays;
+import java.util.Locale;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.Normalizer;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -39,7 +43,7 @@ public class PlayerService {
     private ClubService clubService;
 
     @Autowired
-    private br.com.passebackend.lineup.LineupRepository lineups;
+    private LineupRepository lineups;
 
     @Transactional
     public Player getActivePlayerForUpdate(Integer id) {
@@ -130,7 +134,7 @@ public class PlayerService {
 
         }
 
-        player.setDeletedAt(LocalDateTime.now());
+        player.setDeletedAt(DateTimeUtils.now());
 
         repository.save(player);
 
@@ -176,29 +180,19 @@ public class PlayerService {
 
         String[] words = name.split(" ");
 
-        if (words.length < 2) {
+        if (Arrays.stream(words).filter(word -> word.codePoints().anyMatch(Character::isLetter)).count() < 2) {
             throw new IllegalArgumentException("Nome deve conter pelo menos duas palavras.");
         }
 
         for (String word : words) {
-            boolean hasLetter = false;
-
             for (int i = 0; i < word.length();) {
                 int character = word.codePointAt(i);
-
-                if (Character.isLetter(character)) {
-                    hasLetter = true;
-                }
 
                 if (character >= '0' && character <= '9') {
                     throw new IllegalArgumentException("Nome não pode conter números.");
                 }
 
                 i += Character.charCount(character);
-            }
-
-            if (!hasLetter) {
-                throw new IllegalArgumentException("Cada palavra do nome deve conter uma letra.");
             }
 
         }
@@ -600,13 +594,13 @@ public class PlayerService {
                 case "age_desc": next = (a, b) -> Integer.compare(b.getAge(), a.getAge()); break;
                 case "position": next = Comparator.comparingInt(a -> a.getPosition().getOrder()); break;
 
-                default: next = Comparator.comparing(a -> normalizeForSearch(a.getName()));
+                default: next = Comparator.comparing(Player::getName, StringUtils::compareNames);
             }
 
             comparator = comparator.thenComparing(next);
         }
 
-        comparator = comparator.thenComparing(a -> normalizeForSearch(a.getName()))
+        comparator = comparator.thenComparing(Player::getName, StringUtils::compareNames)
                 .thenComparing(Player::getId);
 
         return comparator;
@@ -648,7 +642,7 @@ public class PlayerService {
         String text = Normalizer.normalize(value, Normalizer.Form.NFD);
         text = text.replaceAll("\\p{Mn}+", "");
 
-        return text.toLowerCase(java.util.Locale.ROOT);
+        return text.toLowerCase(Locale.ROOT);
 
     }
 

@@ -1,5 +1,11 @@
 package br.com.passebackend.player;
 
+import jakarta.persistence.LockModeType;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +19,9 @@ import jakarta.persistence.criteria.Predicate;
 public interface PlayerRepository 
 	extends JpaRepository<Player, Integer>,
 			JpaSpecificationExecutor<Player> {
-    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
-    @org.springframework.data.jpa.repository.Query("select p from Player p where p.id = :id and p.deletedAt is null")
-    java.util.Optional<Player> findActiveForUpdate(@org.springframework.data.repository.query.Param("id") Integer id);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Player p where p.id = :id and p.deletedAt is null")
+    Optional<Player> findActiveForUpdate(@Param("id") Integer id);
 
     long countByClubIdAndDeletedAtIsNull(Integer clubId);
 

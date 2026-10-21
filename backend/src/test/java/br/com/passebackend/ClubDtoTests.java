@@ -1,5 +1,8 @@
 package br.com.passebackend;
 
+import br.com.passebackend.contract.ContractService;
+import java.util.Optional;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +42,7 @@ class ClubDtoTests {
     private PlayerService playerService;
 
     @Mock
-    private br.com.passebackend.contract.ContractService contractService;
+    private ContractService contractService;
 
     @InjectMocks
     private ClubService service;
@@ -138,7 +141,7 @@ class ClubDtoTests {
         Player golFirst = player(2, "Alvaro Silva", PlayerPosition.GOALKEEPER, club);
         Player ata = player(1, "Ana Lima", PlayerPosition.STRIKER, club);
 
-        when(repository.findById(1)).thenReturn(java.util.Optional.of(club));
+        when(repository.findById(1)).thenReturn(Optional.of(club));
         when(playerService.getPlayersByClubId(1)).thenReturn(new ArrayList<>(List.of(ata, mei, golLater, golFirst)));
         when(playerService.calculateMarketValue(any())).thenReturn(new BigDecimal("8.79"));
         when(playerService.toResponse(any())).thenAnswer(invocation -> {

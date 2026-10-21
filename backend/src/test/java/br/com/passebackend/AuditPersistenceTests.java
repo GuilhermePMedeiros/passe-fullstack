@@ -1,5 +1,14 @@
 package br.com.passebackend;
 
+import br.com.passebackend.nucleo.exception.ResourceNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.stream.Collectors;
+import org.assertj.core.api.ThrowableAssert;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.ConnectionCallback;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -53,7 +62,7 @@ class AuditPersistenceTests {
         service.deletePlayer(created.getId()); players.flush();
         assertThat(jdbc.queryForObject("SELECT excluido_em IS NOT NULL FROM jogadores WHERE id=?",Boolean.class,created.getId())).isTrue();
         assertThatThrownBy(()->service.getPlayerById(created.getId()))
-                .isInstanceOf(br.com.passebackend.nucleo.exception.ResourceNotFoundException.class);
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test void requiredSevenTablesExist() {
@@ -69,7 +78,7 @@ class AuditPersistenceTests {
         String suffix=UUID.randomUUID().toString();
         clubs.saveAndFlush(club("Águias Auditoria "+suffix,"XQZ"));
         assertThatThrownBy(()->clubs.saveAndFlush(club("águias auditoria "+suffix,"XQY")))
-                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test void databaseNameUniquenessPreservesAccents() {
@@ -82,7 +91,7 @@ class AuditPersistenceTests {
         String suffix=UUID.randomUUID().toString();
         clubs.saveAndFlush(club("Auditoria Primeiro "+suffix,"XQZ"));
         assertThatThrownBy(()->clubs.saveAndFlush(club("Auditoria Segundo "+suffix,"XQZ")))
-                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test void migrationRejectsDuplicatesWithoutChangingRows() throws Exception {
@@ -95,11 +104,11 @@ class AuditPersistenceTests {
 
     private void verifyMigration(boolean duplicate) throws Exception {
         String table="clubes_mig_"+UUID.randomUUID().toString().replace("-", "");
-        String script=java.nio.file.Files.readString(java.nio.file.Path.of("scripts", "001-clubes-nome-unico.sql"));
+        String script=Files.readString(Path.of("scripts", "001-clubes-nome-unico.sql"));
         String statements=script.lines().filter(line->!line.stripLeading().startsWith("--"))
-                .collect(java.util.stream.Collectors.joining("\n")).replace("clubes",table);
+                .collect(Collectors.joining("\n")).replace("clubes",table);
         // Temporary tables belong only to this MySQL session; no application rows are changed.
-        jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Void>) connection -> {
+        jdbc.execute((ConnectionCallback<Void>) connection -> {
             try (var statement=connection.createStatement()) {
                 statement.execute("CREATE TEMPORARY TABLE "+table+" (nome VARCHAR(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL)");
                 try (var insert=connection.prepareStatement("INSERT INTO "+table+" (nome) VALUES (?), (?)")) {
@@ -107,18 +116,18 @@ class AuditPersistenceTests {
                     insert.setString(2,duplicate?"águias fc":"Aguias FC");
                     insert.executeUpdate();
                 }
-                org.assertj.core.api.ThrowableAssert.ThrowingCallable migrate=()-> {
+                ThrowableAssert.ThrowingCallable migrate=()-> {
                     for (String sql : statements.split(";")) {
                         if (!sql.isBlank()) statement.execute(sql);
                     }
                 };
                 if (duplicate) {
-                    assertThatThrownBy(migrate).isInstanceOf(java.sql.SQLException.class)
+                    assertThatThrownBy(migrate).isInstanceOf(SQLException.class)
                             .hasMessageContaining("Duplicate entry");
                 } else {
                     assertThatCode(migrate).doesNotThrowAnyException();
                     assertThatThrownBy(()->statement.execute("INSERT INTO "+table+" (nome) VALUES ('águias fc')"))
-                            .isInstanceOf(java.sql.SQLException.class).hasMessageContaining("Duplicate entry");
+                            .isInstanceOf(SQLException.class).hasMessageContaining("Duplicate entry");
                 }
                 try (var rows=statement.executeQuery("SELECT COUNT(*) FROM "+table)) {
                     rows.next(); assertThat(rows.getInt(1)).isEqualTo(2);

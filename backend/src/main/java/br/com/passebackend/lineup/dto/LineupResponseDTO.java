@@ -1,5 +1,8 @@
 package br.com.passebackend.lineup.dto;
 
+import br.com.passebackend.player.dto.PlayerResponseDTO;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -8,7 +11,7 @@ public class LineupResponseDTO {
     private Integer clubId;
     private String formation;
     private boolean complete;
-    private java.util.List<br.com.passebackend.player.dto.PlayerResponseDTO> players;
+    private List<PlayerResponseDTO> players;
 
     public Integer getClubId() {
         return clubId;
@@ -34,11 +37,11 @@ public class LineupResponseDTO {
         this.complete = complete;
     }
 
-    public java.util.List<br.com.passebackend.player.dto.PlayerResponseDTO> getPlayers() {
+    public List<PlayerResponseDTO> getPlayers() {
         return players;
     }
 
-    public void setPlayers(java.util.List<br.com.passebackend.player.dto.PlayerResponseDTO> players) {
+    public void setPlayers(List<PlayerResponseDTO> players) {
         this.players = players;
     }
 }

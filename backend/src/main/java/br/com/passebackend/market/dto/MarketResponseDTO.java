@@ -1,27 +1,31 @@
 package br.com.passebackend.market.dto;
 
+import br.com.passebackend.contract.dto.ContractResponseDTO;
+import br.com.passebackend.transaction.dto.TransactionResponseDTO;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.math.BigDecimal;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class MarketResponseDTO extends br.com.passebackend.transaction.dto.TransactionResponseDTO {
+public class MarketResponseDTO extends TransactionResponseDTO {
     
     private BigDecimal clubCash;
     
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
-    private br.com.passebackend.contract.dto.ContractResponseDTO contract;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private ContractResponseDTO contract;
     
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private BigDecimal purchaseValue;
     
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer remainingDays;
     
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer penaltyRate;
     
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String contractStatus;
 
     public BigDecimal getClubCash() {
@@ -32,11 +36,11 @@ public class MarketResponseDTO extends br.com.passebackend.transaction.dto.Trans
         this.clubCash = clubCash;
     }
 
-    public br.com.passebackend.contract.dto.ContractResponseDTO getContract() {
+    public ContractResponseDTO getContract() {
         return contract;
     }
 
-    public void setContract(br.com.passebackend.contract.dto.ContractResponseDTO contract) {
+    public void setContract(ContractResponseDTO contract) {
         this.contract = contract;
     }
 

@@ -1,9 +1,12 @@
 package br.com.passebackend.transaction;
 
+import br.com.passebackend.transaction.enums.TransactionType;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Integer>,
-        org.springframework.data.jpa.repository.JpaSpecificationExecutor<Transaction> {
+        JpaSpecificationExecutor<Transaction> {
     boolean existsByClubIdAndPlayerIdAndType(Integer clubId, Integer playerId,
-            br.com.passebackend.transaction.enums.TransactionType type);
+            TransactionType type);
 }

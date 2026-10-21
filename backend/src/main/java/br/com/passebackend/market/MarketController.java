@@ -1,5 +1,7 @@
 package br.com.passebackend.market;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +58,7 @@ public class MarketController extends BaseController {
 
     @GetMapping({"/clubs/{id}/transactions", "/clubs/{id}/transactions/export"})
     public ResponseEntity<Object> history(@PathVariable String id, @RequestParam Map<String, String> params,
-            jakarta.servlet.http.HttpServletRequest request) {
+            HttpServletRequest request) {
         try {
             int clubId = parseId(id);
 

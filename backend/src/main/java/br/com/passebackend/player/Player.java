@@ -1,5 +1,7 @@
 package br.com.passebackend.player;
 
+import br.com.passebackend.nucleo.util.DateTimeUtils;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -83,18 +85,18 @@ public class Player extends ObjectBase {
 	@Column(name = "potencial", nullable = false)
 	private Integer potential;
 
-	@Column(name = "excluido_em")
+	@Column(name = "excluido_em", columnDefinition = "TIMESTAMP")
 	private LocalDateTime deletedAt;
 
-	@Column(name = "criado_em", nullable = false, updatable = false)
+	@Column(name = "criado_em", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
 	private LocalDateTime createdAt;
 
-	@Column(name = "atualizado_em", nullable = false)
+	@Column(name = "atualizado_em", nullable = false, columnDefinition = "TIMESTAMP")
 	private LocalDateTime updatedAt;
 
 	@PrePersist
 	protected void onCreate() {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = DateTimeUtils.now();
 		createdAt = now;
 		updatedAt = now;
 
@@ -103,7 +105,7 @@ public class Player extends ObjectBase {
 
 	@PreUpdate
 	protected void onUpdate() {
-		updatedAt = LocalDateTime.now();
+		updatedAt = DateTimeUtils.now();
 	}
 
 	public Player() {

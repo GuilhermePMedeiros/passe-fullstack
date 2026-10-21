@@ -1,5 +1,7 @@
 package br.com.passebackend;
 
+import java.sql.SQLException;
+
 import static org.assertj.core.api.Assertions.*;
 
 import java.math.BigDecimal;
@@ -227,7 +229,7 @@ class RemainingEntitiesPersistenceTests {
         Match m = match(home, away); duel(m, p, q, 1);
         assertThatCode(() -> duel(match(home, away), p, q, 1)).doesNotThrowAnyException();
         assertThatThrownBy(() -> jdbc.update("UPDATE duelos_partida SET ordem=7 WHERE partida_id=?", m.getId()))
-                .hasRootCauseInstanceOf(java.sql.SQLException.class).hasMessageContaining("error code [3819]");
+                .hasRootCauseInstanceOf(SQLException.class).hasMessageContaining("error code [3819]");
         duel(m, p, q, 2);
         assertThatThrownBy(() -> jdbc.update("UPDATE duelos_partida SET ordem=1 WHERE partida_id=? AND ordem=2", m.getId()))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -239,17 +241,17 @@ class RemainingEntitiesPersistenceTests {
         Match m = match(home, away); MatchDuel d = duel(m, p, q, 1);
         for (String assignment : List.of("gols_mandante=-1", "gols_visitante=4", "visitante_id=mandante_id", "formacao_mandante='4-0'")) {
             assertThatThrownBy(() -> jdbc.update("UPDATE partidas SET " + assignment + " WHERE id=?", m.getId()))
-                    .hasRootCauseInstanceOf(java.sql.SQLException.class).hasMessageContaining("error code [3819]");
+                    .hasRootCauseInstanceOf(SQLException.class).hasMessageContaining("error code [3819]");
         }
         for (String assignment : List.of("condicao_atacante='DOENTE'", "posicao_defensor='XXX'", "atributo_ataque='pace'")) {
             assertThatThrownBy(() -> jdbc.update("UPDATE duelos_partida SET " + assignment + " WHERE id=?", d.getId()))
-                    .hasRootCauseInstanceOf(java.sql.SQLException.class).hasMessageContaining("error code [3819]");
+                    .hasRootCauseInstanceOf(SQLException.class).hasMessageContaining("error code [3819]");
         }
         Contract c = contract(home, p); Transaction t = transaction(home, p);
         assertThatThrownBy(() -> jdbc.update("UPDATE contratos SET situacao='INVALIDO' WHERE id=?", c.getId()))
-                .hasRootCauseInstanceOf(java.sql.SQLException.class).hasMessageContaining("error code [3819]");
+                .hasRootCauseInstanceOf(SQLException.class).hasMessageContaining("error code [3819]");
         assertThatThrownBy(() -> jdbc.update("UPDATE transacoes SET tipo='TROCA' WHERE id=?", t.getId()))
-                .hasRootCauseInstanceOf(java.sql.SQLException.class).hasMessageContaining("error code [3819]");
+                .hasRootCauseInstanceOf(SQLException.class).hasMessageContaining("error code [3819]");
     }
 
     @Test

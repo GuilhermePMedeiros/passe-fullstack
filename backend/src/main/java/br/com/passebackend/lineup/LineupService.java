@@ -149,7 +149,7 @@ public class LineupService {
     public List<Player> orderedPlayers(List<Player> starters) {
         List<Player> ordered = new ArrayList<>(starters);
         ordered.sort(Comparator.comparingInt((Player player) -> player.getPosition().getOrder())
-                .thenComparing(player -> StringUtils.normalizeForOrdering(player.getName()))
+                .thenComparing(Player::getName, StringUtils::compareNames)
                 .thenComparing(Player::getId));
         return ordered;
     }

@@ -19,3 +19,6 @@ CREATE DATABASE IF NOT EXISTS passedb_test CHARACTER SET utf8mb4 COLLATE utf8mb4
 CREATE USER '$MYSQL_TEST_USER'@'%' IDENTIFIED BY '$test_password';
 GRANT SELECT ON passedb_test.* TO '$MYSQL_TEST_USER'@'%';
 SQL
+
+MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql --user=root --database="$MYSQL_DATABASE" < /opt/passe-sql/000-core-schema.sql
+MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql --user=root --database="$MYSQL_DATABASE" < /opt/passe-sql/002-entidades-restantes.sql

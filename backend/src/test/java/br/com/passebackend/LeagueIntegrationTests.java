@@ -1,5 +1,8 @@
 package br.com.passebackend;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.hamcrest.Matchers;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -209,7 +212,7 @@ class LeagueIntegrationTests {
         List<Player> h = officialTeam(home, true), a = officialTeam(away, false);
         String json = mapper.writeValueAsString(matchRequest(home, away));
         String response = mvc.perform(post("/api/v1/matches").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isCreated()).andExpect(header().string("Location", org.hamcrest.Matchers.startsWith("/api/v1/matches/")))
+                .andExpect(status().isCreated()).andExpect(header().string("Location", Matchers.startsWith("/api/v1/matches/")))
                 .andExpect(jsonPath("$.home.goals").value(1)).andExpect(jsonPath("$.away.goals").value(2))
                 .andExpect(jsonPath("$.result").value("VISITANTE")).andExpect(jsonPath("$.duels.length()").value(6))
                 .andReturn().getResponse().getContentAsString();
@@ -278,7 +281,7 @@ class LeagueIntegrationTests {
         officialTeam(home, true); officialTeam(away, false);
         MatchResponseDTO first = matches.play(matchRequest(home, away));
         MatchResponseDTO second = matches.play(matchRequest(home, away));
-        com.fasterxml.jackson.databind.JsonNode repeatedDuels = mapper.valueToTree(second.getDuels());
+        JsonNode repeatedDuels = mapper.valueToTree(second.getDuels());
         assertThat(repeatedDuels).isEqualTo(mapper.valueToTree(first.getDuels()));
         assertThat(second.getHome().getGoals()).isEqualTo(first.getHome().getGoals());
         jdbc.update("UPDATE partidas SET jogada_em=? WHERE id IN (?,?)", LocalDateTime.of(2026,10,21,12,0), first.getId(), second.getId()); em.clear();

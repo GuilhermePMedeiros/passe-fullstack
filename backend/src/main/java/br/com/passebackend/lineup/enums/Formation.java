@@ -1,5 +1,8 @@
 package br.com.passebackend.lineup.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum Formation {
     THREE_ONE("3-1", 3, 0, 1),
     TWO_TWO("2-2", 2, 0, 2),
@@ -22,10 +25,10 @@ public enum Formation {
     public int getMidfielders() { return midfielders; }
     public int getStrikers() { return strikers; }
 
-    @com.fasterxml.jackson.annotation.JsonValue
+    @JsonValue
     public String getCode() { return code; }
 
-    @com.fasterxml.jackson.annotation.JsonCreator
+    @JsonCreator
     public static Formation fromCode(String code) {
         for (Formation value : values()) {
             if (value.code.equals(code)) return value;

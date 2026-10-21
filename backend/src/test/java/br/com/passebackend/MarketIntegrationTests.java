@@ -1,5 +1,7 @@
 package br.com.passebackend;
 
+import br.com.passebackend.lineup.LineupId;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -108,7 +110,7 @@ class MarketIntegrationTests {
                 .andExpect(jsonPath("$.profit").value(3)).andExpect(jsonPath("$.fee").value(0.30))
                 .andExpect(jsonPath("$.cash_change").value(35.70)).andExpect(jsonPath("$.club_cash").value(296.85))
                 .andExpect(jsonPath("$.contract_status").value("RESCINDIDO"));
-        assertThat(lineups.findById(new br.com.passebackend.lineup.LineupId(c.getId(), p.getId()))).isEmpty();
+        assertThat(lineups.findById(new LineupId(c.getId(), p.getId()))).isEmpty();
         assertThat(c.getFormation()).isEqualTo("2-1-1");
         assertThat(p.getClub()).isNull();
         assertThat(contract.getEndedAt()).isNotNull();

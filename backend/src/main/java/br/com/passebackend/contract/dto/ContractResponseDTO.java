@@ -1,5 +1,7 @@
 package br.com.passebackend.contract.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.math.BigDecimal;
@@ -8,11 +10,11 @@ import java.math.BigDecimal;
 public class ContractResponseDTO {
     private BigDecimal purchaseValue;
     private String loyaltyUntil;
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer remainingDays;
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer penaltyRate;
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
 
     public BigDecimal getPurchaseValue() {

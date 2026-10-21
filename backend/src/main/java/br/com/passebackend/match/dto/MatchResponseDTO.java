@@ -1,5 +1,8 @@
 package br.com.passebackend.match.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -10,8 +13,8 @@ public class MatchResponseDTO {
     private MatchClubDTO home;
     private MatchClubDTO away;
     private String result;
-    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
-    private java.util.List<MatchDuelDTO> duels;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<MatchDuelDTO> duels;
 
     public Integer getId() {
         return id;
@@ -53,11 +56,11 @@ public class MatchResponseDTO {
         this.result = result;
     }
 
-    public java.util.List<MatchDuelDTO> getDuels() {
+    public List<MatchDuelDTO> getDuels() {
         return duels;
     }
 
-    public void setDuels(java.util.List<MatchDuelDTO> duels) {
+    public void setDuels(List<MatchDuelDTO> duels) {
         this.duels = duels;
     }
 }

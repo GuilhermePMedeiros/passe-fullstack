@@ -1,5 +1,8 @@
 package br.com.passebackend;
 
+import br.com.passebackend.player.PlayerService;
+import br.com.passebackend.player.dto.PlayerRequestDTO;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -47,7 +50,7 @@ class MarketAtomicityTests {
     static void database(DynamicPropertyRegistry properties) { AuditPersistenceTests.applicationDatabase(properties); }
 
     @Autowired MarketService market;
-    @Autowired br.com.passebackend.player.PlayerService playerService;
+    @Autowired PlayerService playerService;
     @Autowired PlayerRepository players;
     @Autowired ClubRepository clubs;
     @Autowired LineupRepository lineups;
@@ -127,7 +130,7 @@ class MarketAtomicityTests {
     @Test
     void concurrentPlayerEditCannotOverwriteNewClubOwnership() throws Exception {
         Club c = club("XQZ"); Player p = player("25");
-        var edit = new br.com.passebackend.player.dto.PlayerRequestDTO();
+        var edit = new PlayerRequestDTO();
         edit.setName("Nome Atualizado"); edit.setPosition(PlayerPosition.MIDFIELDER); edit.setAgility(85); edit.setAge(25);
         assertThat(race(() -> market.buy(p.getId(), request(c)), () -> playerService.updatePlayer(p.getId(), edit)))
                 .containsOnly("OK");

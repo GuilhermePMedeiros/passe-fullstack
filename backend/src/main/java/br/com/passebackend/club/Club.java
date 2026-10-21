@@ -1,5 +1,7 @@
 package br.com.passebackend.club;
 
+import br.com.passebackend.nucleo.util.DateTimeUtils;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -29,7 +31,7 @@ public class Club extends ObjectBase{
 	@Column(name = "formacao", length = 5)
 	private String formation;
 
-	@Column(name = "criado_em", nullable = false, updatable = false)
+	@Column(name = "criado_em", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
 	private LocalDateTime createdAt;
 
 	public Club() {
@@ -47,7 +49,7 @@ public class Club extends ObjectBase{
 	@PrePersist
 	public void onCreate() {
 		if (createdAt == null) {
-			createdAt = LocalDateTime.now();
+			createdAt = DateTimeUtils.now();
 		}
 
 		if (cash == null) {

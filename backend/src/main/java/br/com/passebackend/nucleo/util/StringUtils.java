@@ -1,12 +1,25 @@
 package br.com.passebackend.nucleo.util;
 
+import java.text.Normalizer;
+import java.util.Locale;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 public final class StringUtils {
 
+    public static int compareNames(String first, String second) {
+        var left = normalizeForOrdering(first).codePoints().iterator();
+        var right = normalizeForOrdering(second).codePoints().iterator();
+        while (left.hasNext() && right.hasNext()) {
+            int comparison = Integer.compare(left.nextInt(), right.nextInt());
+            if (comparison != 0) return comparison;
+        }
+        return Boolean.compare(left.hasNext(), right.hasNext());
+    }
+
     public static String normalizeForOrdering(String name) {
-        return java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
-                .replaceAll("\\p{Mn}+", "").toLowerCase(java.util.Locale.ROOT);
+        return Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("\\p{Mn}+", "").toLowerCase(Locale.ROOT);
     }
 	
 	public static boolean isBlank(String str) {

@@ -47,7 +47,7 @@ public class StandingsService {
         return Comparator.comparingInt(StandingResponseDTO::getPoints).reversed()
                 .thenComparing(Comparator.comparingInt(StandingResponseDTO::getGoalDifference).reversed())
                 .thenComparing(Comparator.comparingInt(StandingResponseDTO::getGoalsFor).reversed())
-                .thenComparing(row -> StringUtils.normalizeForOrdering(row.getClubName()))
+                .thenComparing(StandingResponseDTO::getClubName, StringUtils::compareNames)
                 .thenComparing(StandingResponseDTO::getClubId);
     }
 

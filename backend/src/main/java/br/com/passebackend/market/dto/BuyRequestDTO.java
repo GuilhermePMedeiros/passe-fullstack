@@ -1,5 +1,7 @@
 package br.com.passebackend.market.dto;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -8,7 +10,7 @@ public class BuyRequestDTO {
     
     private Integer clubId;
     
-    private java.time.LocalDateTime loyaltyUntil;
+    private LocalDateTime loyaltyUntil;
 
     public Integer getClubId() {
         return clubId;
@@ -18,11 +20,11 @@ public class BuyRequestDTO {
         this.clubId = clubId;
     }
 
-    public java.time.LocalDateTime getLoyaltyUntil() {
+    public LocalDateTime getLoyaltyUntil() {
         return loyaltyUntil;
     }
 
-    public void setLoyaltyUntil(java.time.LocalDateTime loyaltyUntil) {
+    public void setLoyaltyUntil(LocalDateTime loyaltyUntil) {
         this.loyaltyUntil = loyaltyUntil;
     }
 }
