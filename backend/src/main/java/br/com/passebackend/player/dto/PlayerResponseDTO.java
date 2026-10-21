@@ -29,6 +29,13 @@ public class PlayerResponseDTO {
     private Integer overall;
     private Integer clubId;
 
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    private br.com.passebackend.contract.dto.ContractResponseDTO contract;
+
+    public br.com.passebackend.contract.dto.ContractResponseDTO getContract() { return contract; }
+
+    public void setContract(br.com.passebackend.contract.dto.ContractResponseDTO contract) { this.contract = contract; }
+
     public PlayerResponseDTO() {
     }
 
