@@ -3,8 +3,8 @@
 O Passe é uma aplicação fullstack com Spring Boot, React e MySQL. Docker Compose
 constrói e inicia os serviços integrados sem instalar Java, Maven, Node.js ou MySQL
 no computador. O backend implementa jogadores, clubes, mercado, contratos, histórico
-financeiro/CSV, escalações, partidas e classificação. A interface React ainda é
-uma estrutura inicial, sem telas de negócio.
+financeiro/CSV, escalações, partidas e classificação. A interface React possui
+a tela inicial com resumo real da liga; as telas internas de negócio continuam pendentes.
 
 ### Funcionalidades implementadas no backend
 
@@ -80,8 +80,9 @@ documentados no [README do backend](backend/README.md#4-endpoints).
 
 O navegador pode usar caminhos relativos /api/v1/.... O Nginx encaminha /api/ para
 backend:8080 na rede Docker, preservando caminho e query string. Esse hostname
-interno não é utilizado pelo navegador. A página React atual não consome dados de
-negócio; o proxy disponibiliza a comunicação para as próximas telas.
+interno não é utilizado pelo navegador. A tela inicial consulta totais de
+jogadores, livres, clubes e partidas e mostra o líder da classificação quando
+há partidas. Navegação, testes e limites estão no [README do frontend](frontend/README.md).
 
 ### Validação de instalação
 
@@ -282,8 +283,8 @@ backend pelo DNS interno Docker, inclusive após troca de IP.
 ## 11. Funcionalidades não implementadas
 
 Telas de jogadores, clubes, mercado e liga, seus formulários, feedback e estados de
-lista ainda não foram implementados no frontend. Não há testes de interface,
-formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
+lista ainda não foram implementados no frontend. A tela inicial possui testes
+de componente e de navegador. Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
 e logs por requisição estão implementados. A instalação dos containers não significa
 que a interface de negócio esteja concluída.
 
@@ -301,3 +302,7 @@ Na revisão dos READMEs, foram conferidos o código e os registros de instalaç�
 e testes; apenas a documentação foi alterada, sem repetir a instalação ou o reset.
 Relatórios gerados por IA permanecem locais. Resultados declarados dependem de
 execuções reais; a revisão das alterações cabe aos mantenedores.
+Depois da preparação inicial, Codex apoiou a tela inicial W01/W02, componentes,
+tema, integração com a API, rotas e testes de interface. Foram aceitas as imagens
+como referência, dados reais no aplicativo e cenários controlados apenas nos testes.
+Não foram criadas as demais telas de negócio. Consulte o README do frontend.
