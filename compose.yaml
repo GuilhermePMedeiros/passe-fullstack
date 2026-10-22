@@ -68,16 +68,40 @@ services:
       context: ./backend
       target: tests
     environment:
-      TEST_DB_URL: jdbc:mysql://db:3306/passedb_test
+      TEST_DB_URL: jdbc:mysql://tests-db:3306/passedb_test
       TEST_DB_USERNAME: ${TEST_DB_USERNAME:-passe_test}
       TEST_DB_PASSWORD: ${TEST_DB_PASSWORD:-passe_test_local}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       TZ: America/Sao_Paulo
     depends_on:
-      db:
+      tests-db:
         condition: service_healthy
     volumes:
       - ./docs/evidencias/mysql:/app/target/surefire-reports
+
+  tests-db:
+    profiles: [tools]
+    image: mysql:8.0.46
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_as_ci"]
+    environment:
+      MYSQL_DATABASE: passedb_test
+      MYSQL_ROOT_PASSWORD: test_root_local
+      MYSQL_USER: ${TEST_DB_USERNAME:-passe_test}
+      MYSQL_PASSWORD: ${TEST_DB_PASSWORD:-passe_test_local}
+      TZ: America/Sao_Paulo
+    tmpfs:
+      - /var/lib/mysql
+    ports:
+      - "127.0.0.1:13308:3306"
+    volumes:
+      - ./backend/scripts/docker-test-init.sh:/docker-entrypoint-initdb.d/01-tests.sh:ro
+      - ./backend/scripts:/opt/passe-sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database=passedb_test --execute="SELECT COUNT(*) FROM clubes" > /dev/null']
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
 
 volumes:
   mysql_data:

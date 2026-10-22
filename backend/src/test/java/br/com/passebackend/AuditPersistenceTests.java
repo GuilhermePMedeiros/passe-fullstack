@@ -26,20 +26,17 @@ import br.com.passebackend.player.dto.PlayerRequestDTO;
 import br.com.passebackend.player.enums.PlayerPosition;
 import static org.assertj.core.api.Assertions.*;
 
-/** Real MySQL application schema. Every business write is rolled back by Spring Test. */
+/** Isolated MySQL test schema. Every business write is rolled back by Spring Test. */
 @SpringBootTest(properties = "spring.jpa.hibernate.ddl-auto=none")
 @Transactional
 class AuditPersistenceTests {
     @DynamicPropertySource
     static void applicationDatabase(DynamicPropertyRegistry properties) {
-        // Compose's tools service provides TEST_DB_URL with the container hostname.
-        String url = System.getenv("DB_URL");
-        if (url == null) url = System.getenv("TEST_DB_URL");
-        if (url == null) url = "jdbc:mysql://localhost:3307/passedb";
-        final String applicationUrl = url.replace("/passedb_test", "/passedb");
-        properties.add("spring.datasource.url", () -> applicationUrl);
-        properties.add("spring.datasource.username", () -> System.getenv().getOrDefault("DB_USERNAME", "passe_app"));
-        properties.add("spring.datasource.password", () -> System.getenv().getOrDefault("DB_PASSWORD", "passe_app_local"));
+        String url = TestDatabaseSettings.url(System.getenv().getOrDefault("TEST_DB_URL",
+                "jdbc:mysql://localhost:13308/passedb_test"));
+        properties.add("spring.datasource.url", () -> url);
+        properties.add("spring.datasource.username", () -> System.getenv().getOrDefault("TEST_DB_USERNAME", "passe_test"));
+        properties.add("spring.datasource.password", () -> System.getenv().getOrDefault("TEST_DB_PASSWORD", "passe_test_local"));
         properties.add("spring.datasource.hikari.read-only", () -> false);
     }
     @Autowired PlayerService service;
