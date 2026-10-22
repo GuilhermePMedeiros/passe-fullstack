@@ -1,0 +1,35 @@
+import { RefreshCw, SearchX, ServerOff, X } from 'lucide-react'
+import { Button } from './Button'
+import { Skeleton } from './skeleton'
+
+export function LoadingState({ label = 'Carregando dados…' }: { label?: string }) {
+  return (
+    <div className="list-state" role="status">
+      <RefreshCw aria-hidden="true" />
+      <p>{label}</p>
+      <Skeleton className="loading-skeleton" aria-hidden="true" />
+    </div>
+  )
+}
+
+export function ErrorState({ message, onRetry, title = 'Não foi possível carregar os dados' }: { message: string; onRetry: () => void; title?: string }) {
+  return (
+    <div className="list-state" role="alert">
+      <ServerOff aria-hidden="true" />
+      <h2>{title}</h2>
+      <p>{message}</p>
+      <Button variant="outline" onClick={onRetry}><RefreshCw aria-hidden="true" /> Tentar novamente</Button>
+    </div>
+  )
+}
+
+export function EmptyState({ message, onClear }: { message: string; onClear: () => void }) {
+  return (
+    <div className="list-state">
+      <SearchX aria-hidden="true" />
+      <h2>{message}</h2>
+      <p>Confira a busca ou altere os filtros. A busca ignora maiúsculas, minúsculas e acentos.</p>
+      <Button variant="outline" onClick={onClear}><X aria-hidden="true" /> Limpar filtros</Button>
+    </div>
+  )
+}

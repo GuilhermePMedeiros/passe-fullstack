@@ -6,7 +6,7 @@ import { FootballFieldBackground } from '../components/FootballFieldBackground'
 import { LeagueFooter } from '../components/LeagueFooter'
 import { LeagueStatistics } from '../components/LeagueStatistics'
 import { LeagueStatus } from '../components/LeagueStatus'
-import { PasseLogo } from '../components/PasseLogo'
+import { PasseLogo } from '@/components/layout/PasseLogo'
 import { WorkflowCard, type WorkflowStep } from '../components/WorkflowCard'
 import { useLeagueSummary } from '../hooks/useLeagueSummary'
 

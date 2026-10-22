@@ -78,9 +78,11 @@ try {
   
   assert.equal(new URL(page.url()).pathname, '/players')
   
+  await page.waitForFunction(() => document.querySelector('h1') === document.activeElement)
   assert.equal(await page.locator('h1').evaluate(element => element === document.activeElement), true)
   
   await page.getByRole('link', { name: 'Voltar ao início' }).click()
+  await page.getByRole('heading', { name: 'Gestão da liga, do mercado à classificação' }).waitFor()
   
   const destinations = ['/players', '/clubs', '/players?free=true&action=buy', '/clubs?action=sell', '/clubs?tab=history', '/matches']
   
@@ -88,8 +90,10 @@ try {
     const link = page.getByRole('navigation').getByRole('link').nth(index)
     await link.focus()
     await page.keyboard.press('Enter')
+    await page.waitForURL(url => `${url.pathname}${url.search}` === destinations[index])
     assert.equal(page.url().replace('http://localhost:15174', ''), destinations[index])
     await page.getByRole('link', { name: 'Voltar ao início' }).click()
+    await page.getByRole('heading', { name: 'Gestão da liga, do mercado à classificação' }).waitFor()
   }
   
   checks.push('Iniciar e seis cards por Enter: URLs corretas, foco e retorno sem reload')
