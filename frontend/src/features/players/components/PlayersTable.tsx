@@ -23,8 +23,8 @@ export function PlayersTable({ players, clubs, loading, onAction }: PlayersTable
       return (
         <div className="club-cell">
           <Badge variant="secondary" className="free-label">Livre</Badge>
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/transfers/buy?player_id=${player.id}`}><ShoppingCart aria-hidden="true" /> Comprar</Link>
+          <Button variant="outline" size="sm" data-buy-player={player.id} aria-label={`Comprar ${player.name}`} onClick={() => onAction('buy', player)}>
+            <ShoppingCart aria-hidden="true" /> Comprar
           </Button>
         </div>
       )

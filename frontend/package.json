@@ -16,6 +16,8 @@
     "test:players": "node tests/players.browser.mjs",
     "test:players:states": "node tests/players.states.browser.mjs",
     "test:clubs": "node tests/clubs.browser.mjs",
+    "test:transfers": "node tests/transfers.browser.mjs",
+    "test:navigation": "node tests/navigation.browser.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

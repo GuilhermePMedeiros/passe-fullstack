@@ -6,8 +6,8 @@ para shadcn/ui e cliente HTTP estão preparados. A tela inicial W01/W02 foi
 implementada a partir das imagens locais, com estatísticas reais e navegação.
 A rota `/players` implementa listagem, filtros, cadastro, edição, condição,
 detalhes e exclusão lógica com a API real. `/clubs` e `/clubs/:id` incluem
-cadastro, elenco/contratos, venda, histórico/CSV e escalação. Compra e telas
-de partidas/classificação continuam pendentes.
+cadastro, elenco/contratos, venda, histórico/CSV e escalação. Compra abre um
+diálogo integrado a Jogadores. Telas de partidas/classificação continuam pendentes.
 
 ## Instalação com Docker
 
@@ -160,9 +160,11 @@ A organização é por funcionalidade em src/features/, começando por home; pla
 transfers, lineups, matches e standings. Serão criadas apenas pastas com código
 em uso. Serviços de cada funcionalidade usarão src/lib/api.ts; hooks controlarão
 carregamento, erros e atualização dos dados. Componentes React não chamarão
-Fetch diretamente. Iniciar vai para /players; Compra preserva free=true/action=buy;
-Venda e Histórico direcionam a /clubs com contexto na query; Liga vai para
-/matches. Venda, Histórico e Escalação ficam nas abas de `/clubs/:id`.
+Fetch diretamente. Iniciar vai para /players; Compra abre /players?free=true.
+Venda direciona a /clubs?action=sell; Histórico e Liga direcionam à escolha de
+clube com tab=history ou tab=lineup. A escolha pela tabela ou sidebar preserva
+a aba solicitada. Partidas e Classificação mantêm suas rotas como pendentes.
+Venda, Histórico e Escalação ficam nas abas de `/clubs/:id`.
 
 ## Jogadores
 
@@ -181,7 +183,8 @@ não grava; operações pendentes impedem envios duplicados.
 Endpoints: GET/POST `/players`, GET/PUT/DELETE `/players/{id}`, PATCH
 `/players/{id}/condition`, GET `/clubs`, GET `/clubs/{id}/lineup` e GET `/matches`.
 O menu usa clubes, totais e última partida reais. Comprar abre o destino do
-mercado com o ID do jogador; a compra ainda não está implementada na interface.
+mercado com o ID do jogador; tabela, menu e detalhes agora abrem a compra em
+um diálogo sobre a listagem existente.
 
 Para o ensaio completo de navegador, utilize exclusivamente um projeto Compose
 novo com banco vazio, portas 13329/18089 e CORS `http://localhost:15175`.
@@ -235,7 +238,8 @@ no catálogo shadcn. Seletores, formulários, cards e feedbacks compõem as base
 existentes. Não foram instaladas dependências nesta feature.
 
 Comprar jogadores e o estado de elenco vazio levam a `/players?free=true`.
-De lá, Comprar mantém a rota de compra existente; essa rota ainda é pendente.
+De lá, Comprar abre o diálogo de compra. O caminho `/transfers/buy?player_id=ID`
+também é aceito e redireciona para `/players?free=true&buy=ID`.
 As capturas são referências raster; não se afirma identidade de pixels, medidas
 editáveis do Figma ou validação de todos os estados de hover/contraste.
 
@@ -254,9 +258,100 @@ na liga de QA e recusa outras origens. Capturas/resultados ficam exclusivamente
 locais em `docs/evidencias/clubs/`. Inclui cenários controlados de erro/vazio,
 comparação com respostas reais e larguras 360/375/390/768/1366/1920.
 
+## Negociações: compra e venda
+
+Os estados M01–M08 e V01–V05 compõem os diálogos sobre as páginas existentes.
+Comprar na tabela, no menu de ações ou nos detalhes abre `PurchasePlayerDialog`.
+O formulário consulta novamente jogador e clubes, exige clube, data e hora,
+interpreta a entrada como Brasília e envia `loyalty_until` com `-03:00`.
+Datas futuras/limite de 1.095 dias e recusas financeiras são verificadas pela API.
+Clube cheio, caixa insuficiente, recompra e disponibilidade não são bloqueados
+pela tela: o pedido é enviado e o `message` é apresentado.
+
+Antes da compra, o valor de mercado e o caixa são apenas os consultados.
+Taxa/custo/novo caixa só aparecem no resultado do POST; a única soma local é
+`value + fee`, permitida pela banca. O resultado inclui fidelidade, status e link
+do clube. Sucesso atualiza a listagem e os indicadores do menu por novas consultas,
+sem reload. Filtro por clube encontra o comprado; só livres deixa de encontrá-lo.
+Falha de rede preserva entradas, não confirma operação e permite retry manual;
+POSTs não são repetidos automaticamente. Uma resposta perdida não comprova
+falha da gravação: numa nova tentativa a API volta a verificar o estado atual.
+
+`ClubSaleDialog` foi adaptado: resumo do jogador, contrato consultado e aviso de
+titular pela escalação real, sem impedir a venda por esse motivo. O POST não tem
+corpo. O resultado usa multa, lucro/prejuízo, comissão, crédito, contrato e caixa
+da API. Sem multa/fidelidade cumprida só é anunciado quando o resultado confirma.
+Link Ver histórico e Fechar completam a operação. Compra e venda compartilham
+TransferFacts, TransferPlayerSummary, TransferNotice e ContractStatusBadge;
+essas composições usam Modal/Dialog, Alert, Badge e componentes shadcn existentes.
+Não foram instaladas bibliotecas. O resultado da modal já comunica sucesso;
+não há toast concorrente cobrindo seus botões no celular.
+
+Teste de integração em QA, nunca na base principal. Na raiz, em Ubuntu, com
+portas 13329 e 18089 livres:
+
+~~~sh
+MYSQL_PORT=13329 BACKEND_PORT=18089 CORS_ORIGIN=http://localhost:15175 docker compose -p passe-transfers-qa-20261022 up --build -d --wait db backend
+~~~
+
+Na pasta frontend, com Chrome instalado e porta 15177 livre:
+
+~~~sh
+PASSE_TRANSFERS_API=http://localhost:18089 npm run test:transfers
+~~~
+
+No PowerShell, defina as mesmas variáveis com `$env:NOME='valor'` e execute
+os comandos. O teste aceita somente a origem QA indicada, cria um clube e
+14 jogadores, compra/vende pela interface e prepara os demais contratos pela
+API. Não reseta/apaga bancos ou volumes. Para repetição em base nova, use outro
+nome de projeto após encerrar o anterior; nunca substitua pela base principal.
+O Vite temporário usa proxy com origem CORS de QA 15175 e é encerrado ao final.
+V03 (fidelidade já cumprida) usa resposta controlada para não aguardar o contrato
+expirar. Falha de rede e recusa de venda também são controladas; orçamento,
+elenco cheio, recompra, compra, venda, contratos e retirada de titular usam API
+real. Capturas/resultados em `docs/evidencias/transfers/`, exclusivamente locais.
+`npm test` inclui testes de componente da compra/venda e integração com Jogadores.
+
+## Navegação e acesso direto
+
+`/` preserva a Home; `/players`, `/clubs` e `/clubs/:id` carregam os módulos
+independentemente da página inicial. O detalhe aceita `tab=squad`, `tab=lineup`
+ou `tab=history`. Na lista de clubes, `tab=history`/`tab=lineup` orientam a
+escolha do clube e são preservados ao ordenar ou usar a sidebar. O atalho Venda
+orienta a escolha do clube e a ação Vender no Elenco. Liga leva à escalação
+implementada; sua descrição identifica Partidas/Classificação como pendentes.
+
+`/players?buy=ID` abre a compra; `/clubs?create=true` abre o cadastro. Esses
+estados acompanham a URL em entrada direta, F5 e Voltar/Avançar. A compra pelo
+botão também registra buy na URL, mantendo filtros existentes. Mudanças de aba
+evitam registrar a mesma navegação duas vezes por eventos de foco/ativação.
+`/transfers/buy?player_id=ID` permanece como redirecionamento de compatibilidade.
+`/matches` e `/standings` têm aviso de funcionalidade pendente; caminhos não
+cadastrados mostram Página não encontrada. Não há implementação fictícia da liga.
+
+Na pasta frontend, com Chrome instalado e porta 15178 livre:
+
+~~~sh
+npm run test:navigation
+~~~
+
+O teste verifica entrada em nova aba/F5, Home, menu desktop/mobile, Voltar/Avançar,
+abas e diálogos com respostas controladas, sem escritas. Para acrescentar consultas
+GET à API real já disponível em http://localhost:8080:
+
+~~~sh
+PASSE_NAVIGATION_REAL_API=1 npm run test:navigation
+~~~
+
+No PowerShell, defina `$env:PASSE_NAVIGATION_REAL_API='1'` antes do comando.
+O Vite de teste usa somente proxy GET e a origem CORS local 5173. Não inicia
+containers nem altera o banco. Capturas/resultados ficam exclusivamente locais
+em `docs/evidencias/navigation/`. O build não atualiza sozinho uma imagem Docker
+já em execução: ela precisa ser reconstruída para receber o código atual.
+
 ## Funcionalidades não implementadas
 
-Fluxo de compra, telas de partidas/classificação e formatador. Os padrões E07
+Telas de partidas/classificação e formatador. Os padrões E07
 foram reutilizados nas listas de Clubes, elenco e histórico; as telas de partidas
 e classificação ainda precisam ser implementadas com esses estados. Tabelas
 largas do clube usam rolagem local; a responsividade é conferida pelo teste de
@@ -296,3 +391,14 @@ componentes, integração e testes. Foram aceitas composições shadcn existente
 prévia tática CSS/SVG e validação das escolhas da escalação; cálculos financeiros
 permaneceram na API. Não foram alterados backend, Docker ou documentos oficiais.
 Diferenças visuais e evidências ficam em documentação local de auditoria.
+Na feature Negociações, Codex inspecionou M01–M08/V01–V05 e os contratos reais,
+implementou a compra integrada e adaptou a venda existente. Foram reutilizadas
+bases shadcn, dados da API e formatação Brasília; só o total valor + taxa é somado
+na interface. Estimativas financeiras antes da confirmação foram descartadas.
+Testes, matrizes e evidências de auditoria permanecem locais.
+Na correção de navegação, Codex inspecionou o roteamento e reproduziu atalhos
+que descartavam a aba do clube e entradas duplicadas no histórico. Foram aceitos
+ajustes pontuais nos links e no estado derivado da URL, mantendo Home/layouts;
+redirecionar a Home ou reestruturar a aplicação foi descartado. Rotas diretas,
+F5, menu e Voltar/Avançar foram cobertos por teste de navegador, com leituras
+reais da API e nenhuma escrita no banco. Registros detalhados permanecem locais.

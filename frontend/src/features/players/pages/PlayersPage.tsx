@@ -15,6 +15,8 @@ import { PlayersTable } from '../components/PlayersTable'
 import { PlayerDialogs, type PlayerDialogState } from '../components/PlayerDialogs'
 import { PlayerSortMenu } from '../components/PlayerSortMenu'
 import { CONDITIONS, type Player, type PlayerAction, type PlayerFiltersQuery } from '../types/player.types'
+import { PurchasePlayerDialog } from '@/features/transfers/components/PurchasePlayerDialog'
+import type { PurchaseResult } from '@/features/transfers/types/transfer.types'
 import '../players.css'
 
 const FILTER_KEYS = ['search', 'position', 'condition', 'club_id', 'free', 'min_age', 'max_age', 'min_value', 'max_value', 'sort', 'page']
@@ -30,6 +32,7 @@ export function PlayersPage() {
   const headingRef = useRef<HTMLHeadingElement>(null)
   const openerRef = useRef<number | null>(null)
   const [dialog, setDialog] = useState<PlayerDialogState | null>(null)
+  const purchaseId = searchParams.get('buy')
   const [message, setMessage] = useState('')
 
   useLayoutEffect(() => { headingRef.current?.focus() }, [])
@@ -37,9 +40,13 @@ export function PlayersPage() {
   useEffect(() => {
     if (state.status === 'success' && !state.result.data.length && state.result.meta.page > 1) {
       const lastPage = Math.max(1, state.result.meta.total_pages)
-      if (lastPage < state.result.meta.page) setSearchParams({ ...query, page: String(lastPage) }, { replace: true })
+      if (lastPage < state.result.meta.page) {
+        const next = new URLSearchParams(searchParams)
+        next.set('page', String(lastPage))
+        setSearchParams(next, { replace: true })
+      }
     }
-  }, [state, query, setSearchParams])
+  }, [state, searchParams, setSearchParams])
 
   function changeQuery(next: PlayerFiltersQuery) {
     const entries = Object.entries(next).filter(([, value]) => value !== '')
@@ -62,7 +69,33 @@ export function PlayersPage() {
   function openAction(action: PlayerAction, player: Player) {
     toast.dismiss()
     openerRef.current = player.id
+    if (action === 'buy') {
+      setDialog(null)
+      const next = new URLSearchParams(searchParams)
+      next.set('buy', String(player.id))
+      setSearchParams(next)
+      return
+    }
     setDialog({ kind: action, player })
+  }
+
+  function closePurchase() {
+    if (searchParams.has('buy')) {
+      const next = new URLSearchParams(searchParams)
+      next.delete('buy')
+      setSearchParams(next, { replace: true })
+    }
+    window.requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(`[data-buy-player="${purchaseId}"]`)
+        ?? document.querySelector<HTMLElement>(`[data-player-action="${purchaseId}"]`)
+        ?? headingRef.current
+      target?.focus()
+    })
+  }
+
+  function handlePurchased(result: PurchaseResult) {
+    refreshAll()
+    setMessage(`Compra concluída: ${result.player_name}. Novo caixa: ${formatMoney(result.club_cash)} moedas.`)
   }
 
   function openCreate() {
@@ -113,9 +146,15 @@ export function PlayersPage() {
 
   const counts = state.status === 'success' ? { total: state.total, free: state.free, contracted: state.total - state.free } : null
   const activeTab = query.free === 'true' ? 'free' : query.free === 'false' ? 'contracted' : 'all'
+  const activeTabRef = useRef<string>(activeTab)
+  useLayoutEffect(() => {
+    activeTabRef.current = activeTab
+  }, [activeTab])
   const showToolbar = state.status === 'loading' || (state.status === 'success' && state.result.data.length > 0)
 
   function changeTab(value: string) {
+    if (value === activeTabRef.current) return
+    activeTabRef.current = value
     const free = value === 'free' ? 'true' : value === 'contracted' ? 'false' : ''
     changeQuery({ ...query, free, ...(free === 'true' ? { club_id: '' } : {}), page: '1' })
   }
@@ -142,6 +181,7 @@ export function PlayersPage() {
         <TabsContent value={activeTab} className="players-tab-content" aria-label="Resultado da consulta">{renderList()}</TabsContent>
       </Tabs>
       <p className="players-footnote">{message || 'Overall e valor de mercado são calculados a cada consulta. A busca ignora maiúsculas, minúsculas e acentos.'}</p>
+      {purchaseId && <PurchasePlayerDialog key={purchaseId} playerId={purchaseId} onClose={closePurchase} onPurchased={handlePurchased} />}
       {dialog && (
         <PlayerDialogs
           key={`${dialog.kind}-${'player' in dialog ? dialog.player.id : 'new'}`}

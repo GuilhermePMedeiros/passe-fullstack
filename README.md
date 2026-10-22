@@ -283,10 +283,10 @@ backend pelo DNS interno Docker, inclusive após troca de IP.
 
 ## 11. Funcionalidades não implementadas
 
-O fluxo de compra e as telas de partidas/classificação ainda não foram implementados no frontend.
+As telas de partidas/classificação ainda não foram implementadas no frontend.
 Clubes possui lista/cadastro, detalhes, elenco/contratos, venda, histórico/CSV e escalação.
 Jogadores possui listagem, filtros, cadastro, edição, condição, detalhes e
-exclusão lógica. A compra ainda direciona para uma seção pendente.
+exclusão lógica. A compra está integrada à lista, menu e detalhes dos jogadores livres.
 A tela inicial e Jogadores possuem testes de componente e de navegador.
 Clubes também possui testes de formulário, escalação e navegador com API QA isolada.
 Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
@@ -321,3 +321,8 @@ API. Dependências, testes e limitações estão documentados no README do front
 Na feature Clubes, Codex apoiou as referências C01–C11/E04/E05/E07, implementação
 por composição das bases shadcn existentes, integração real e testes isolados.
 Fórmulas continuam na API; compra/partidas/classificação não foram ampliadas.
+Na etapa Negociações, Codex inspecionou M01–M08/V01–V05, integrou a compra
+à página de jogadores e adaptou a confirmação/resultado da venda existente.
+Foram aceitos componentes shadcn já instalados, valores da API e testes;
+estimativas de taxas/multas/caixa no frontend foram descartadas. Somente
+valor + taxa é somado para exibir o custo total, conforme permitido pela banca.

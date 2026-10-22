@@ -48,6 +48,19 @@ async function chooseFilter(label: string, option: string) {
 }
 
 describe('página de jogadores', () => {
+  it('abre compra da tabela sobre a mesma lista, sem navegar para seção pendente', async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/v1/clubs')) return Response.json([])
+      if (url === '/api/v1/players/1') return Response.json(player)
+      return Response.json({ data: [player], meta: { page: 1, limit: 10, total_items: 1, total_pages: 1 } })
+    })
+    renderPlayers('/players?free=true')
+    fireEvent.click(await screen.findByRole('button', { name: 'Comprar João Silva' }))
+    expect(await screen.findByRole('heading', { name: 'Comprar jogador' })).toBeTruthy()
+    expect(screen.queryByText('Esta seção ainda não está disponível.')).toBeNull()
+    expect(await screen.findByRole('link', { name: 'Criar clube' })).toBeTruthy()
+  })
+
   it('mostra colunas obrigatórias e solicita dez itens por página', async () => {
     renderPlayers()
     await screen.findByText('João Silva')

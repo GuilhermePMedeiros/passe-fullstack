@@ -32,7 +32,7 @@ export interface PlayersResponse {
 export type PlayerEditRequest = Pick<Player, 'name' | 'position' | 'agility' | 'age'>
 export type PlayerCreateRequest = PlayerEditRequest & Pick<Player, AttributeKey | 'potential'>
 export type PlayerFiltersQuery = Record<string, string>
-export type PlayerAction = 'details' | 'edit' | 'condition' | 'delete'
+export type PlayerAction = 'details' | 'edit' | 'condition' | 'delete' | 'buy'
 
 export const POSITIONS: Record<PlayerPosition, string> = {
   GOL: 'Goleiro',

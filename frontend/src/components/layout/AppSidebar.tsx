@@ -1,5 +1,5 @@
 import { ListOrdered, Clock3, Shield, Swords, Trophy, UsersRound } from 'lucide-react'
-import { Link, NavLink } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { PasseLogo } from './PasseLogo'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -9,6 +9,10 @@ import { useWorkspace } from './WorkspaceContext'
 
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { data, error, refresh } = useWorkspace()
+  const location = useLocation()
+  const requestedTab = new URLSearchParams(location.search).get('tab')
+  const clubSuffix = location.pathname === '/clubs' && (requestedTab === 'history' || requestedTab === 'lineup')
+    ? `?tab=${requestedTab}` : ''
   const latest = data?.matches[0]
   const year = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', timeZone: 'America/Sao_Paulo' }).format(new Date())
 
@@ -27,7 +31,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <NavLink to="/standings"><ListOrdered aria-hidden="true" /> Classificação</NavLink>
         <p className="sidebar-group-title">Clubes</p>
         {data?.clubs.map(club => (
-          <NavLink key={club.id} to={`/clubs/${club.id}`}>
+          <NavLink key={club.id} to={`/clubs/${club.id}${clubSuffix}`}>
             <Badge variant="secondary" className="club-monogram" aria-hidden="true">{club.name.slice(0, 1).toLocaleUpperCase('pt-BR')}</Badge>
             {club.name}
           </NavLink>

@@ -31,10 +31,15 @@ export function ClubDetailsPage() {
   const [message, setMessage] = useState('')
   const headingRef = useRef<HTMLHeadingElement>(null)
   const tab = ['squad', 'lineup', 'history'].includes(params.get('tab') ?? '') ? params.get('tab')! : 'squad'
+  const activeTabRef = useRef(tab)
 
   useLayoutEffect(() => {
-    if (state.status === 'success') headingRef.current?.focus()
-  }, [id, state.status])
+    activeTabRef.current = tab
+  }, [tab])
+
+  useLayoutEffect(() => {
+    if (state.status === 'success' && !sale) headingRef.current?.focus()
+  }, [id, state.status, sale])
 
   function closeSale() {
     const playerId = sale?.id
@@ -50,7 +55,19 @@ export function ClubDetailsPage() {
     workspace.refresh()
     setRevision(value => value + 1)
     setMessage('Jogador vendido. Elenco, caixa, contratos e escalação serão atualizados pela API. Se um titular saiu, escale novamente antes de jogar.')
-    toast.success('Jogador vendido')
+  }
+
+  function openSale(player: SquadPlayer) {
+    toast.dismiss()
+    setSale(player)
+  }
+
+  function changeTab(value: string) {
+    if (value === activeTabRef.current) return
+    activeTabRef.current = value
+    const next = new URLSearchParams(params)
+    next.set('tab', value)
+    setParams(next)
   }
 
   function renderContent() {
@@ -70,13 +87,13 @@ export function ClubDetailsPage() {
         {location.state?.created && !message && <Feedback message={`Clube criado: ${club.name}.`} />}
         <Feedback message={message} />
         <ClubSummaryCards club={club} />
-        <Tabs value={tab} onValueChange={value => setParams({ tab: value })} className="club-tabs">
+        <Tabs value={tab} onValueChange={changeTab} className="club-tabs">
           <TabsList aria-label="Seções do clube" className="club-tabs-list">
             <TabsTrigger value="squad"><Shirt aria-hidden="true" />Elenco <span>{club.players.length}</span></TabsTrigger>
             <TabsTrigger value="lineup"><ClipboardList aria-hidden="true" />Escalação</TabsTrigger>
             <TabsTrigger value="history"><History aria-hidden="true" />Histórico</TabsTrigger>
           </TabsList>
-          <TabsContent value="squad"><ClubSquadTab players={club.players} onSell={setSale} /></TabsContent>
+          <TabsContent value="squad"><ClubSquadTab players={club.players} onSell={openSale} /></TabsContent>
           <TabsContent value="lineup"><ClubLineupTab club={club} /></TabsContent>
           <TabsContent value="history"><ClubHistoryTab key={id} clubId={id} revision={revision} /></TabsContent>
         </Tabs>

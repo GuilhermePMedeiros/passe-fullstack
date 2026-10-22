@@ -152,11 +152,11 @@ try {
   await main.getByRole('button', { name: 'Vender Felipe Moura', exact: true }).click()
   const beforeSale = writes.length
   await dialog.getByRole('button', { name: 'Confirmar venda', exact: true }).dblclick()
-  await dialog.getByRole('heading', { name: 'Jogador vendido', exact: true }).waitFor()
+  await dialog.getByRole('heading', { name: 'Venda concluída', exact: true }).waitFor()
   assert.equal(writes.length - beforeSale, 1)
   for (const label of ['Valor de compra', 'Valor de venda', 'Dias restantes', 'Multa', 'Lucro', 'Comissão', 'Crédito no caixa', 'Novo caixa']) await dialog.getByText(label, { exact: true }).waitFor()
   await capture('sale-result')
-  await dialog.getByRole('button', { name: 'Concluir' }).click()
+  await dialog.getByRole('button', { name: 'Fechar', exact: true }).click()
   await readyClub(clubName)
   await main.getByRole('tab', { name: 'Escalação', exact: true }).click()
   await main.getByText('Incompleta', { exact: true }).waitFor()

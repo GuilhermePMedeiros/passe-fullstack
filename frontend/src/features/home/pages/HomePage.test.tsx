@@ -71,7 +71,7 @@ describe('tela inicial Passe', () => {
     vi.mocked(getLeagueSummary).mockResolvedValue(summary)
     renderHome()
     const links = within(screen.getByRole('navigation', { name: 'Etapas da gestão da liga' })).getAllByRole('link')
-    expect(links.map(link => link.getAttribute('href'))).toEqual(['/players', '/clubs', '/players?free=true&action=buy', '/clubs?action=sell', '/clubs?tab=history', '/matches'])
+    expect(links.map(link => link.getAttribute('href'))).toEqual(['/players', '/clubs', '/players?free=true', '/clubs?action=sell', '/clubs?tab=history', '/clubs?tab=lineup'])
     await screen.findByText('líder: Delta FC, 6 pontos')
   })
 

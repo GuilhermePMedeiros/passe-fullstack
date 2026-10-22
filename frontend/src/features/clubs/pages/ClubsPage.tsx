@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { ArrowDownUp, ChevronDown, Plus, Shield } from 'lucide-react'
 import { toast } from 'sonner'
@@ -29,21 +29,34 @@ export function ClubsPage() {
   const { state, refresh } = useClubQuery(load)
   const workspace = useWorkspace()
   const navigate = useNavigate()
-  const [creating, setCreating] = useState(params.get('create') === 'true')
+  const creating = params.get('create') === 'true'
+  const requestedTab = params.get('tab')
+  const detailsTab = requestedTab === 'history' || requestedTab === 'lineup' ? requestedTab : undefined
+  let description = 'Cadastre clubes e acompanhe o caixa, o elenco e o patrimônio. A liga aceita no máximo 20 clubes.'
+  if (detailsTab === 'history') description = 'Escolha um clube para consultar o histórico de transações, os totais e o CSV.'
+  else if (detailsTab === 'lineup') description = 'Escolha um clube para consultar ou montar a escalação dos titulares.'
+  else if (params.get('action') === 'sell') description = 'Escolha um clube e use Vender na aba Elenco para negociar um jogador.'
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useLayoutEffect(() => { headingRef.current?.focus() }, [])
 
+  function openCreate() {
+    const next = new URLSearchParams(params)
+    next.set('create', 'true')
+    setParams(next)
+  }
+
   function closeCreate() {
-    setCreating(false)
-    if (params.has('create')) setParams(sort === 'name' ? {} : { sort }, { replace: true })
+    const next = new URLSearchParams(params)
+    next.delete('create')
+    setParams(next, { replace: true })
     window.requestAnimationFrame(() => document.getElementById('new-club-button')?.focus())
   }
 
   function renderList() {
     if (state.status === 'loading') return <><p className="club-panel-header" role="status">Carregando clubes…</p><ClubsTable clubs={[]} loading /></>
     if (state.status === 'error') return <ErrorState title="Não foi possível carregar os clubes" message={state.message} onRetry={refresh} />
-    if (!state.data.length) return <EmptyState message="Nenhum clube cadastrado" description="Crie o primeiro clube com nome e sigla para começar." action={<Button variant="outline" onClick={() => setCreating(true)}><Plus aria-hidden="true" /> Novo clube</Button>} />
+    if (!state.data.length) return <EmptyState message="Nenhum clube cadastrado" description="Crie o primeiro clube com nome e sigla para começar." action={<Button variant="outline" onClick={openCreate}><Plus aria-hidden="true" /> Novo clube</Button>} />
     return (
       <>
         <div className="club-list-toolbar">
@@ -52,13 +65,17 @@ export function ClubsPage() {
             <DropdownMenuTrigger asChild><Button variant="outline" className="club-sort"><ArrowDownUp aria-hidden="true" /> Ordenar: {SORTS[sort] ?? sort}<ChevronDown aria-hidden="true" /></Button></DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="sort-menu">
               <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={sort} onValueChange={value => setParams({ sort: value })}>
+              <DropdownMenuRadioGroup value={sort} onValueChange={value => {
+                const next = new URLSearchParams(params)
+                next.set('sort', value)
+                setParams(next)
+              }}>
                 {Object.entries(SORTS).map(([value, label]) => <DropdownMenuRadioItem key={value} value={value}>{label}</DropdownMenuRadioItem>)}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <ClubsTable clubs={state.data} />
+        <ClubsTable clubs={state.data} detailsTab={detailsTab} />
       </>
     )
   }
@@ -67,8 +84,8 @@ export function ClubsPage() {
     <article className="clubs-page">
       <header className="page-header">
         <span className="page-icon"><Shield aria-hidden="true" /></span>
-        <div><h1 ref={headingRef} tabIndex={-1}>Clubes</h1><p>Cadastre clubes e acompanhe o caixa, o elenco e o patrimônio. A liga aceita no máximo 20 clubes.</p></div>
-        <Button id="new-club-button" onClick={() => setCreating(true)}><Plus aria-hidden="true" /> Novo clube</Button>
+        <div><h1 ref={headingRef} tabIndex={-1}>Clubes</h1><p>{description}</p></div>
+        <Button id="new-club-button" onClick={openCreate}><Plus aria-hidden="true" /> Novo clube</Button>
       </header>
       <section className="club-panel" aria-label="Lista de clubes" aria-busy={state.status === 'loading'}>{renderList()}</section>
       <p className="club-footnote">Clubes pelo nome por padrão ou pelo patrimônio, com empate desfeito pelo nome. Valores em moedas, devolvidos pela API.</p>

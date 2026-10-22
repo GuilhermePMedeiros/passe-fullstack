@@ -15,7 +15,7 @@ import { PlayerConditionDialog } from './PlayerConditionDialog'
 import { PlayerDeleteDialog } from './PlayerDeleteDialog'
 import { PlayerDetailsDrawer } from './PlayerDetailsDrawer'
 
-export type PlayerDialogState = { kind: 'create' } | { kind: PlayerAction | 'created'; player: Player }
+export type PlayerDialogState = { kind: 'create' } | { kind: Exclude<PlayerAction, 'buy'> | 'created'; player: Player }
 
 interface PlayerDialogsProps {
   dialog: PlayerDialogState
@@ -73,7 +73,7 @@ export function PlayerDialogs({ dialog, onClose, onAction, onSaved, onDeleted }:
     if (dialog.kind === 'edit') return <PlayerForm player={player} onSaved={saved => onSaved(saved, false)} onCancel={onClose} onBusy={setBusy} />
     if (dialog.kind === 'condition') return <PlayerConditionDialog player={player} onSaved={(saved, removed) => onSaved(saved, false, removed)} onCancel={onClose} onBusy={setBusy} />
     if (dialog.kind === 'delete') return <PlayerDeleteDialog player={player} onDeleted={onDeleted} onCancel={onClose} onBusy={setBusy} />
-    if (dialog.kind === 'details') return <PlayerDetailsDrawer player={player} clubs={data?.clubs ?? []} onAction={onAction} onClose={onClose} />
+    if (dialog.kind === 'details') return <PlayerDetailsDrawer player={player} clubs={data?.clubs ?? []} onAction={onAction} />
 
     return (
       <div className="created-result">

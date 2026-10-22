@@ -4,13 +4,19 @@ import { Separator } from '@/components/ui/separator'
 import { Link, useLocation } from 'react-router'
 import { useWorkspace } from './WorkspaceContext'
 
+const SECTION_TITLES: Record<string, string> = {
+  players: 'Jogadores',
+  clubs: 'Clubes',
+  matches: 'Partidas',
+  standings: 'Classificação',
+}
+
 export function AppHeader({ onMenu }: { onMenu: () => void }) {
   const { refresh, data } = useWorkspace()
   const location = useLocation()
-  const isClubs = location.pathname.startsWith('/clubs')
   const clubId = location.pathname.match(/^\/clubs\/([^/]+)$/u)?.[1]
   const clubName = data?.clubs.find(club => String(club.id) === clubId)?.name ?? `Clube ${clubId}`
-  const section = location.pathname.startsWith('/players') ? 'Jogadores' : isClubs ? 'Clubes' : 'Gestão da liga'
+  const section = SECTION_TITLES[location.pathname.split('/')[1]] ?? 'Gestão da liga'
 
   function refreshPage() {
     refresh()

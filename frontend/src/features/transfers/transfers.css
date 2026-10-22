@@ -1,0 +1,183 @@
+.transfer-dialog {
+  width: min(31rem, calc(100% - 1.5rem));
+}
+
+.transfer-form > * + * {
+  margin-top: 1rem;
+}
+
+.transfer-player-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+
+.transfer-player-summary .player-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.transfer-player-summary .player-identity strong {
+  overflow-wrap: anywhere;
+}
+
+.transfer-player-summary > div:last-child:not(.player-identity) {
+  margin-left: auto;
+  text-align: right;
+}
+
+.transfer-player-summary small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 0.625rem;
+}
+
+.transfer-player-summary > div > strong {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.transfer-club-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  font-size: 1rem;
+}
+
+.transfer-club-select > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transfer-date-fields {
+  min-width: 0;
+}
+
+.transfer-date-fields legend {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.transfer-date-fields > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+.transfer-date-fields > p {
+  margin-top: 0.5rem;
+}
+
+.transfer-notice {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+  color: var(--muted-foreground);
+}
+
+.transfer-notice > div {
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+.transfer-facts {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.transfer-facts > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.875rem;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.transfer-facts > div + div {
+  border-top: 1px solid var(--border);
+}
+
+.transfer-facts dt {
+  min-width: 0;
+  color: var(--muted-foreground);
+}
+
+.transfer-facts dt small {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.625rem;
+  font-weight: 400;
+}
+
+.transfer-facts dd {
+  flex-shrink: 0;
+  max-width: 60%;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.transfer-fact-emphasis {
+  background: var(--surface-subtle);
+  font-weight: 600;
+}
+
+.transfer-fact-emphasis dt {
+  color: var(--foreground);
+}
+
+.transfer-value-positive {
+  color: var(--success-foreground);
+}
+
+.transfer-value-negative {
+  color: var(--destructive);
+}
+
+.transfer-success-icon {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: var(--success-soft);
+  color: var(--success-foreground);
+}
+
+.transfer-spinner {
+  animation: transfer-spin 1s linear infinite;
+}
+
+@keyframes transfer-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transfer-spinner {
+    animation: none;
+  }
+}
+
+@media (min-width: 480px) {
+  .transfer-date-fields > div {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .transfer-club-select {
+    min-height: 2.25rem;
+    font-size: 0.75rem;
+  }
+}

@@ -1,5 +1,4 @@
 import { Eye, HeartPulse, MoreHorizontal, Pencil, ShoppingCart, Trash2 } from 'lucide-react'
-import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { Player, PlayerAction } from '../types/player.types'
@@ -24,7 +23,7 @@ export function PlayerActionsMenu({ player, onAction }: { player: Player; onActi
         {player.club_id === null && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild><Link to={`/transfers/buy?player_id=${player.id}`}><ShoppingCart /> Comprar</Link></DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => selectAction('buy')}><ShoppingCart /> Comprar</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="destructive-text" onSelect={() => selectAction('delete')}><Trash2 /> Excluir</DropdownMenuItem>
           </>

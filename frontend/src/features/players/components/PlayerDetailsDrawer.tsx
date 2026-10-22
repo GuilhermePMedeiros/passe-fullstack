@@ -1,5 +1,4 @@
 import { Coins, HeartPulse, Pencil, ShoppingCart, Tag, ChartBar, TrendingUp } from 'lucide-react'
-import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,10 +13,9 @@ interface PlayerDetailsProps {
   player: Player
   clubs: ClubSummary[]
   onAction: (action: PlayerAction, player: Player) => void
-  onClose: () => void
 }
 
-export function PlayerDetailsDrawer({ player, clubs, onAction, onClose }: PlayerDetailsProps) {
+export function PlayerDetailsDrawer({ player, clubs, onAction }: PlayerDetailsProps) {
   const club = clubs.find(item => item.id === player.club_id)
   const metrics = [
     { label: 'Valor de mercado', value: formatMoney(player.market_value), hint: 'Calculado automaticamente', icon: Coins },
@@ -59,7 +57,7 @@ export function PlayerDetailsDrawer({ player, clubs, onAction, onClose }: Player
       <SheetFooter className="modal-actions details-actions">
         <Button variant="outline" onClick={() => onAction('edit', player)}><Pencil aria-hidden="true" /> Editar</Button>
         <Button variant="outline" onClick={() => onAction('condition', player)}><HeartPulse aria-hidden="true" /> Alterar condição</Button>
-        {player.club_id === null && <Button asChild><Link onClick={onClose} to={`/transfers/buy?player_id=${player.id}`}><ShoppingCart aria-hidden="true" /> Comprar</Link></Button>}
+        {player.club_id === null && <Button onClick={() => onAction('buy', player)}><ShoppingCart aria-hidden="true" /> Comprar</Button>}
       </SheetFooter>
     </div>
   )

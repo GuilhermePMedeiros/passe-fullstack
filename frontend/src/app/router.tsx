@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react'
-import { Link, Route, Routes, useLocation } from 'react-router'
+import { Link, Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router'
 import { HomePage } from '@/features/home/pages/HomePage'
 import { Button } from '@/components/ui/Button'
 import { WorkspaceLayout } from './layouts/WorkspaceLayout'
@@ -27,6 +27,14 @@ function PendingSection({ title }: { title: string }) {
   )
 }
 
+function PurchaseRedirect() {
+  const [params] = useSearchParams()
+  const playerId = params.get('player_id')
+  const query = new URLSearchParams({ free: 'true' })
+  if (playerId) query.set('buy', playerId)
+  return <Navigate replace to={`/players?${query}`} />
+}
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -37,7 +45,7 @@ export function AppRoutes() {
         <Route path="/clubs/:id" element={<Suspense fallback={<p role="status">Carregando página…</p>}><ClubDetailsPage /></Suspense>} />
         <Route path="/matches" element={<PendingSection title="Partidas" />} />
         <Route path="/standings" element={<PendingSection title="Classificação" />} />
-        <Route path="/transfers/buy" element={<PendingSection title="Compra de jogador" />} />
+        <Route path="/transfers/buy" element={<PurchaseRedirect />} />
       </Route>
       <Route path="*" element={<PendingSection title="Página não encontrada" />} />
     </Routes>
