@@ -13,13 +13,13 @@ services:
       MYSQL_TEST_PASSWORD: ${TEST_DB_PASSWORD:-passe_test_local}
       TZ: America/Sao_Paulo
     ports:
-      - "127.0.0.1:3307:3306"
+      - "127.0.0.1:${MYSQL_PORT:-3307}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./backend/scripts/docker-init.sh:/docker-entrypoint-initdb.d/01-tests.sh:ro
       - ./backend/scripts:/opt/passe-sql:ro
     healthcheck:
-      test: ["CMD-SHELL", 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database=passedb --execute="SELECT 1" > /dev/null']
+      test: ["CMD-SHELL", 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database=passedb --execute="SELECT COUNT(*) FROM clubes; SELECT COUNT(*) FROM duelos_partida" > /dev/null']
       interval: 5s
       timeout: 5s
       retries: 30
@@ -34,7 +34,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       TZ: America/Sao_Paulo
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -43,7 +43,7 @@ services:
         - CMD
         - bash
         - -c
-        - 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET / HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3; read -r protocol status rest <&3; [[ "$$protocol" == HTTP/* && ( "$$status" == 2?? || "$$status" == 404 ) ]]'
+        - 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET /api/v1/players HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3; read -r protocol status rest <&3; [[ "$$protocol" == HTTP/* && "$$status" == 200 ]]'
       interval: 5s
       timeout: 3s
       retries: 30
@@ -52,7 +52,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "127.0.0.1:5173:80"
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -92,7 +92,7 @@ services:
     tmpfs:
       - /var/lib/mysql
     ports:
-      - "127.0.0.1:13308:3306"
+      - "127.0.0.1:${TEST_MYSQL_PORT:-13308}:3306"
     volumes:
       - ./backend/scripts/docker-test-init.sh:/docker-entrypoint-initdb.d/01-tests.sh:ro
       - ./backend/scripts:/opt/passe-sql:ro
