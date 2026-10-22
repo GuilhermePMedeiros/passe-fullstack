@@ -3,6 +3,10 @@
 .metadata/
 /docs/
 /AGENTS.md
+**/AGENTS.md
+/frontend/FRONTEND_GUIDELINES.md
+.agents/
+.codex/
 # Relatorios gerados por IA permanecem exclusivamente locais.
 **/RELATORIO*
 **/relatorio*
