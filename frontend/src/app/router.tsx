@@ -4,6 +4,8 @@ import { HomePage } from '@/features/home/pages/HomePage'
 import { Button } from '@/components/ui/Button'
 import { WorkspaceLayout } from './layouts/WorkspaceLayout'
 const PlayersPage = lazy(() => import('@/features/players/pages/PlayersPage').then(module => ({ default: module.PlayersPage })))
+const ClubsPage = lazy(() => import('@/features/clubs/pages/ClubsPage').then(module => ({ default: module.ClubsPage })))
+const ClubDetailsPage = lazy(() => import('@/features/clubs/pages/ClubDetailsPage').then(module => ({ default: module.ClubDetailsPage })))
 
 function PendingSection({ title }: { title: string }) {
   
@@ -31,8 +33,8 @@ export function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route element={<WorkspaceLayout />}>
         <Route path="/players" element={<Suspense fallback={<p role="status">Carregando página…</p>}><PlayersPage /></Suspense>} />
-        <Route path="/clubs" element={<PendingSection title="Clubes" />} />
-        <Route path="/clubs/:id" element={<PendingSection title="Clube" />} />
+        <Route path="/clubs" element={<Suspense fallback={<p role="status">Carregando página…</p>}><ClubsPage /></Suspense>} />
+        <Route path="/clubs/:id" element={<Suspense fallback={<p role="status">Carregando página…</p>}><ClubDetailsPage /></Suspense>} />
         <Route path="/matches" element={<PendingSection title="Partidas" />} />
         <Route path="/standings" element={<PendingSection title="Classificação" />} />
         <Route path="/transfers/buy" element={<PendingSection title="Compra de jogador" />} />

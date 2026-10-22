@@ -5,9 +5,12 @@ import { Link, useLocation } from 'react-router'
 import { useWorkspace } from './WorkspaceContext'
 
 export function AppHeader({ onMenu }: { onMenu: () => void }) {
-  const { refresh } = useWorkspace()
+  const { refresh, data } = useWorkspace()
   const location = useLocation()
-  const section = location.pathname.startsWith('/players') ? 'Jogadores' : 'Gestão da liga'
+  const isClubs = location.pathname.startsWith('/clubs')
+  const clubId = location.pathname.match(/^\/clubs\/([^/]+)$/u)?.[1]
+  const clubName = data?.clubs.find(club => String(club.id) === clubId)?.name ?? `Clube ${clubId}`
+  const section = location.pathname.startsWith('/players') ? 'Jogadores' : isClubs ? 'Clubes' : 'Gestão da liga'
 
   function refreshPage() {
     refresh()
@@ -21,7 +24,8 @@ export function AppHeader({ onMenu }: { onMenu: () => void }) {
       </Button>
       <Separator orientation="vertical" className="header-separator" />
       <nav aria-label="Caminho da página" className="breadcrumbs">
-        <Link to="/">Mercado</Link><span aria-hidden="true">›</span><span aria-current="page">{section}</span>
+        <Link to="/">Mercado</Link><span aria-hidden="true">›</span>
+        {clubId ? <><Link to="/clubs">Clubes</Link><span aria-hidden="true">›</span><span aria-current="page">{clubName}</span></> : <span aria-current="page">{section}</span>}
       </nav>
       <Button variant="ghost" size="icon" onClick={refreshPage} aria-label="Atualizar dados">
         <RefreshCw aria-hidden="true" />

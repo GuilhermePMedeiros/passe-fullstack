@@ -283,10 +283,12 @@ backend pelo DNS interno Docker, inclusive após troca de IP.
 
 ## 11. Funcionalidades não implementadas
 
-Telas de clubes, mercado e liga ainda não foram implementadas no frontend.
+O fluxo de compra e as telas de partidas/classificação ainda não foram implementados no frontend.
+Clubes possui lista/cadastro, detalhes, elenco/contratos, venda, histórico/CSV e escalação.
 Jogadores possui listagem, filtros, cadastro, edição, condição, detalhes e
 exclusão lógica. A compra ainda direciona para uma seção pendente.
 A tela inicial e Jogadores possuem testes de componente e de navegador.
+Clubes também possui testes de formulário, escalação e navegador com API QA isolada.
 Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
 e logs por requisição estão implementados. A instalação dos containers não significa
 que a interface de negócio esteja concluída.
@@ -316,3 +318,6 @@ evidências e relatórios gerados permanecem exclusivamente locais.
 Na refatoração visual de Jogadores, foram priorizadas as bases oficiais
 shadcn/ui e a composição conforme as referências, preservando os contratos da
 API. Dependências, testes e limitações estão documentados no README do frontend.
+Na feature Clubes, Codex apoiou as referências C01–C11/E04/E05/E07, implementação
+por composição das bases shadcn existentes, integração real e testes isolados.
+Fórmulas continuam na API; compra/partidas/classificação não foram ampliadas.

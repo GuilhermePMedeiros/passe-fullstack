@@ -27,10 +27,10 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <NavLink to="/standings"><ListOrdered aria-hidden="true" /> Classificação</NavLink>
         <p className="sidebar-group-title">Clubes</p>
         {data?.clubs.map(club => (
-          <Link key={club.id} to={`/clubs/${club.id}`}>
+          <NavLink key={club.id} to={`/clubs/${club.id}`}>
             <Badge variant="secondary" className="club-monogram" aria-hidden="true">{club.name.slice(0, 1).toLocaleUpperCase('pt-BR')}</Badge>
             {club.name}
-          </Link>
+          </NavLink>
         ))}
         {data?.clubs.length === 0 && <p className="sidebar-note">Nenhum clube cadastrado.</p>}
       </nav>

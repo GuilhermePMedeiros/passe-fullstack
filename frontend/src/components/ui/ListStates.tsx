@@ -1,4 +1,5 @@
 import { RefreshCw, SearchX, ServerOff, X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Button } from './Button'
 import { Skeleton } from './skeleton'
 
@@ -23,13 +24,14 @@ export function ErrorState({ message, onRetry, title = 'Não foi possível carre
   )
 }
 
-export function EmptyState({ message, onClear }: { message: string; onClear: () => void }) {
+export function EmptyState({ message, onClear, description = 'Confira a busca ou altere os filtros. A busca ignora maiúsculas, minúsculas e acentos.', action }: { message: string; onClear?: () => void; description?: string; action?: ReactNode }) {
   return (
     <div className="list-state">
       <SearchX aria-hidden="true" />
       <h2>{message}</h2>
-      <p>Confira a busca ou altere os filtros. A busca ignora maiúsculas, minúsculas e acentos.</p>
-      <Button variant="outline" onClick={onClear}><X aria-hidden="true" /> Limpar filtros</Button>
+      <p>{description}</p>
+      {action}
+      {onClear && <Button variant="outline" onClick={onClear}><X aria-hidden="true" /> Limpar filtros</Button>}
     </div>
   )
 }
