@@ -1,11 +1,11 @@
 # PasseFrontend
 
 Base React 19, TypeScript 5.8 e Vite 6, criada com o template oficial
-react-ts do create-vite 6.5.0. As telas de jogadores, clubes, mercado e liga ainda
-não foram implementadas. A estrutura de aplicação, Tailwind CSS, configuração
+react-ts do create-vite 6.5.0. A estrutura de aplicação, Tailwind CSS, configuração
 para shadcn/ui e cliente HTTP estão preparados. A tela inicial W01/W02 foi
 implementada a partir das imagens locais, com estatísticas reais e navegação.
-Os destinos internos ainda mostram uma indicação de seção pendente.
+A rota `/players` implementa listagem, filtros, cadastro, edição, condição,
+detalhes e exclusão lógica com a API real. Clubes, mercado e liga continuam pendentes.
 
 ## Instalação com Docker
 
@@ -77,9 +77,12 @@ de desenvolvimento; para testar a comunicação integrada, use Docker ou npm run
 Não há variáveis VITE_* necessárias. Nunca coloque senhas nessas variáveis:
 seu conteúdo é público no navegador. .env.example explica essa restrição.
 src/main.tsx inicializa React; src/app/App.tsx configura o BrowserRouter;
-src/app/router.tsx configura início e destinos internos ainda pendentes;
+src/app/router.tsx configura início, jogadores e destinos ainda pendentes;
 src/app/layouts/MainLayout.tsx fornece o contêiner da aplicação;
 src/features/home separa página, componentes, hook, serviço, tipos e testes;
+src/features/players organiza a experiência de jogadores na mesma estrutura;
+src/components/layout compartilha menu, cabeçalho e logo;
+src/components/ui compartilha diálogos, campos, tabela, paginação e estados;
 src/styles/globals.css fornece estilos e importa Tailwind;
 src/lib/api.ts centraliza Fetch, JSON, respostas 204, cancelamento e download CSV;
 src/lib/errors.ts preserva status e message da API;
@@ -96,7 +99,7 @@ Versões exatas no lockfile. Não foram adicionados MUI ou Bootstrap.
 @types/node fornece os tipos das APIs de Node usadas na configuração Vite;
 @types/react e @types/react-dom tipam os componentes e a renderização.
 
-Bibliotecas adicionadas para a tela inicial:
+Bibliotecas de interface e testes:
 
 | Biblioteca | Motivo |
 | --- | --- |
@@ -108,6 +111,30 @@ Bibliotecas adicionadas para a tela inicial:
 | clsx e tailwind-merge | Composição e resolução de classes no utilitário cn |
 | @testing-library/react e jsdom | Testes de componente, eventos e estados no Vitest |
 | playwright | Testes de teclado, rotas, layout e integração no Chrome instalado |
+| @radix-ui/react-dialog | Diálogos e drawer com semântica, foco e Escape |
+| @radix-ui/react-dropdown-menu | Menu de ações com navegação por teclado |
+| @radix-ui/react-alert-dialog | Base do AlertDialog shadcn para confirmação da exclusão |
+| @radix-ui/react-select e @radix-ui/react-popover | Bases shadcn dos filtros e faixas |
+| @radix-ui/react-label e @radix-ui/react-radio-group | Rótulos e opções acessíveis dos formulários |
+| @radix-ui/react-tabs | Base shadcn das abas de vínculo |
+| @radix-ui/react-avatar e @radix-ui/react-progress | Bases shadcn dos avatares e indicadores |
+| @radix-ui/react-separator e @radix-ui/react-tooltip | Divisórias e ajuda contextual |
+| sonner | Notificações de sucesso com o componente shadcn Sonner |
+
+As bases Input, Label, Badge, Dialog, AlertDialog, Sheet, DropdownMenu, Select,
+Popover, RadioGroup, Tabs, Table, Skeleton, Separator, Tooltip, Card, Avatar,
+Progress, Pagination e Sonner foram obtidas do registro oficial
+[shadcn/ui New York](https://ui.shadcn.com/docs/components).
+Button existente foi preservado e recebeu variantes/tamanhos. Componentes do
+Passe compõem essas bases; FormField, DataTable e PaginationControls acrescentam
+apenas rótulos/erros, colunas/estados e ligação com meta da API.
+Modal compõe Dialog; detalhes e navegação móvel usam Sheet; exclusão usa
+AlertDialog, mantendo-o aberto até a API concluir. As adaptações locais incluem
+tokens, textos pt-BR, bloqueio de fechamento pendente e escala visual do Progress.
+Sonner usa o tema claro existente, sem instalar um gerenciador de temas.
+Os componentes shadcn são código-fonte local editável, não um pacote visual extra.
+O aviso de licença do código obtido está em [LICENSE.shadcn](LICENSE.shadcn).
+Jogadores é carregado sob demanda na navegação, preservando o início mais leve.
 
 ## Decisões e premissas
 
@@ -132,15 +159,57 @@ em uso. Serviços de cada funcionalidade usarão src/lib/api.ts; hooks controlar
 carregamento, erros e atualização dos dados. Componentes React não chamarão
 Fetch diretamente. Iniciar vai para /players; Compra preserva free=true/action=buy;
 Venda e Histórico direcionam a /clubs com contexto na query; Liga vai para
-/matches. Essas rotas ainda não executam os fluxos dos módulos.
+/matches. Jogadores está funcional; os demais destinos ainda não executam seus fluxos.
+
+## Jogadores
+
+Uma única rota `/players` reúne os estados J01–J16 e E01–E03. Filtros,
+ordenação e página ficam na URL. A tabela solicita dez registros por página e
+usa `meta` da resposta. Busca sem acentos e cálculos de overall, valor base e
+mercado pertencem à API. O formulário valida os campos e as restrições estáticas;
+recusas do backend preservam `message` e não exibem sucesso antecipado.
+
+Cadastro envia os seis atributos e potencial; edição envia somente nome,
+posição, idade e agilidade. Jogador com clube não muda de posição e não tem
+ação de exclusão. DOENTE não passa diretamente para APTO. O diálogo consulta a
+escalação para avisar sobre a retirada de um titular ao adoecer. Cancelamento
+não grava; operações pendentes impedem envios duplicados.
+
+Endpoints: GET/POST `/players`, GET/PUT/DELETE `/players/{id}`, PATCH
+`/players/{id}/condition`, GET `/clubs`, GET `/clubs/{id}/lineup` e GET `/matches`.
+O menu usa clubes, totais e última partida reais. Comprar abre o destino do
+mercado com o ID do jogador; a compra ainda não está implementada na interface.
+
+Para o ensaio completo de navegador, utilize exclusivamente um projeto Compose
+novo com banco vazio, portas 13329/18089 e CORS `http://localhost:15175`.
+Não use o banco principal. Na raiz, em Ubuntu:
+
+~~~sh
+MYSQL_PORT=13329 BACKEND_PORT=18089 CORS_ORIGIN=http://localhost:15175 docker compose -p passe-players-qa up --build -d --wait db backend
+~~~
+
+Na pasta frontend, com Chrome instalado e a porta 15175 livre:
+
+~~~sh
+PASSE_PLAYERS_API=http://localhost:18089 npm run test:players
+~~~
+
+No PowerShell, defina as mesmas variáveis com `$env:NOME='valor'` antes dos
+comandos. O teste recusa outras origens e bancos que já tenham jogadores ou
+clubes; insere sua própria liga e exerce as escritas pela API. Para repetir,
+use outro nome de projeto vazio, após encerrar o anterior. `docker compose -p
+passe-players-qa down` encerra somente esse projeto e preserva seu volume.
+Capturas e resultados da refatoração shadcn ficam locais em
+`docs/evidencias/players-shadcn/`; as evidências anteriores foram preservadas.
+Com esse banco QA já populado, `npm run test:players:states` confere novamente
+J05/J06 e E01/E02/E03 sem gravar registros, usando a mesma variável PASSE_PLAYERS_API.
 
 ## Funcionalidades não implementadas
 
-Telas de negócio, formulários e estados das listas de jogadores, clubes, mercado
-e liga; responsividade dessas telas e formatador. A responsividade do F5 exige jogadores e página do clube com
+Telas de clubes, mercado e liga, sua responsividade e formatador. A responsividade do F5 exige jogadores e página do clube com
 histórico utilizáveis a 375 px, sem rolagem horizontal da página e com todas as
-ações acessíveis; tabelas podem rolar dentro do próprio quadro. Isso ainda não
-foi validado nessas telas. A validação da tela inicial não substitui esse critério.
+ações acessíveis; tabelas podem rolar dentro do próprio quadro. A página do clube
+com histórico ainda precisa ser implementada e validada para completar esse critério.
 
 ## Uso de inteligência artificial
 
@@ -160,3 +229,14 @@ controladas somente nos testes e adaptação mobile em uma única implementaçã
 Não foram aceitos números fictícios no aplicativo ou cálculos locais de classificação;
 as páginas internas ficaram explicitamente pendentes. Resultados de QA estão em
 evidências locais; a avaliação final da fidelidade visual cabe ao mantenedor.
+Na feature Jogadores, Codex apoiou a leitura dos 19 estados, componentes
+compartilhados, formulários, integração e testes. Foram mantidas as fórmulas
+no backend e os relatórios de auditoria exclusivamente locais. Não houve
+alterações no backend, Docker ou documentos oficiais nessa implementação.
+Na refatoração visual, Codex apoiou a comparação das imagens J01–J16/E01–E03,
+a adoção do código oficial shadcn/ui, composição, tokens, responsividade e
+regressão. Foram descartadas as bases manuais de diálogo/menu/tabela e as
+opções nativas anteriores em favor das bases shadcn. Foram preservados os
+serviços, contratos, fórmulas do backend e dados reais da aplicação.
+Os testes foram adaptados aos papéis acessíveis dos novos controles, mantendo
+as verificações funcionais. Capturas e relatórios de comparação ficam locais.

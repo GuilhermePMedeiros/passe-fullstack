@@ -4,7 +4,8 @@ O Passe é uma aplicação fullstack com Spring Boot, React e MySQL. Docker Comp
 constrói e inicia os serviços integrados sem instalar Java, Maven, Node.js ou MySQL
 no computador. O backend implementa jogadores, clubes, mercado, contratos, histórico
 financeiro/CSV, escalações, partidas e classificação. A interface React possui
-a tela inicial com resumo real da liga; as telas internas de negócio continuam pendentes.
+a tela inicial com resumo real da liga e a feature Jogadores integrada à API.
+As telas de clubes, mercado e liga continuam pendentes.
 
 ### Funcionalidades implementadas no backend
 
@@ -282,9 +283,11 @@ backend pelo DNS interno Docker, inclusive após troca de IP.
 
 ## 11. Funcionalidades não implementadas
 
-Telas de jogadores, clubes, mercado e liga, seus formulários, feedback e estados de
-lista ainda não foram implementados no frontend. A tela inicial possui testes
-de componente e de navegador. Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
+Telas de clubes, mercado e liga ainda não foram implementadas no frontend.
+Jogadores possui listagem, filtros, cadastro, edição, condição, detalhes e
+exclusão lógica. A compra ainda direciona para uma seção pendente.
+A tela inicial e Jogadores possuem testes de componente e de navegador.
+Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
 e logs por requisição estão implementados. A instalação dos containers não significa
 que a interface de negócio esteja concluída.
 
@@ -306,3 +309,10 @@ Depois da preparação inicial, Codex apoiou a tela inicial W01/W02, componentes
 tema, integração com a API, rotas e testes de interface. Foram aceitas as imagens
 como referência, dados reais no aplicativo e cenários controlados apenas nos testes.
 Não foram criadas as demais telas de negócio. Consulte o README do frontend.
+Na etapa seguinte, Codex apoiou a feature Jogadores a partir dos 19 estados
+visuais, respeitando os contratos da API e mantendo as fórmulas no backend.
+Escopo, testes reproduzíveis e limitações estão no README do frontend;
+evidências e relatórios gerados permanecem exclusivamente locais.
+Na refatoração visual de Jogadores, foram priorizadas as bases oficiais
+shadcn/ui e a composição conforme as referências, preservando os contratos da
+API. Dependências, testes e limitações estão documentados no README do frontend.
