@@ -5,6 +5,7 @@ RUN mvn -B -ntp dependency:go-offline
 
 FROM dependencies AS source
 COPY src src
+COPY scripts scripts
 
 FROM source AS tests
 CMD ["mvn", "-B", "-ntp", "verify"]

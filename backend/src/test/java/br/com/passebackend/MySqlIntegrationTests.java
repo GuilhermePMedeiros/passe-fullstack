@@ -1,5 +1,7 @@
 package br.com.passebackend;
 
+import java.util.List;
+
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
@@ -65,7 +67,7 @@ class MySqlIntegrationTests {
         var headers = new HttpHeaders();
         headers.setOrigin(origin);
         headers.setAccessControlRequestMethod(HttpMethod.POST);
-        headers.setAccessControlRequestHeaders(java.util.List.of("Content-Type"));
+        headers.setAccessControlRequestHeaders(List.of("Content-Type"));
         return client.exchange("/api/v1/players", HttpMethod.OPTIONS,
                 new HttpEntity<>(headers), String.class);
     }

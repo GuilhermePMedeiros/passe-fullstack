@@ -3,6 +3,11 @@
 .metadata/
 /docs/
 /AGENTS.md
+# Relatorios gerados por IA permanecem exclusivamente locais.
+**/RELATORIO*
+**/relatorio*
+**/REPORT*
+**/report*
 .env
 .env.*
 !.env.example

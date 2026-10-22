@@ -1,86 +1,75 @@
 # PasseFrontend
 
-Estrutura inicial do Passe, criada pelo gerador oficial create-vite 6.5.0,
-template react-ts. React 19, TypeScript 5.8 e Vite 6; Node.js 20.20.2 com npm
-10.8.2 utilizado na validação. Node 20 ou 22 é permitido pela prova; este projeto
-declara Node ^20.20.2 ou ^22.12.0. Versões exatas instaladas estão no
-package-lock.json. Sem telas ou cálculos de negócio.
+Estrutura inicial React 19, TypeScript 5.8 e Vite 6, criada com o template oficial
+react-ts do create-vite 6.5.0. As telas de jogadores, clubes, mercado e liga ainda
+não foram implementadas. O servidor estático e a comunicação por proxy estão preparados.
 
-## Instalação e execução
+## Instalação com Docker
 
-Para instalar e executar em ambiente limpo, siga primeiro o
-[README da raiz](../README.md#3-instalação-e-execução--caminho-principal-da-banca):
-`docker compose up --build -d --wait --wait-timeout 300` constrói interface,
-API e MySQL sem instalar npm no computador. O frontend compilado é servido
-por Nginx em http://localhost:5173. Nenhuma variável/credencial de banco chega ao navegador.
+Na raiz do repositório, com Docker Engine/Desktop e Compose v2.20+ em execução:
 
-### Desenvolvimento local
+~~~sh
+docker compose up --build -d
+~~~
 
-Com Node.js 22.12.0 e npm, e os containers backend/frontend parados para liberar
-as portas, use os comandos abaixo. Node 20.20.2 também foi validado localmente.
+Interface em http://localhost:5173. Não é necessário instalar Node.js no host.
+O build usa Node.js 22.14.0, npm ci com package-lock.json, lint e compilação de
+produção. Nginx 1.28 serve os assets e preserva rotas da interface.
+O proxy /api/ encaminha chamadas para backend:8080 na rede Docker, preservando
+caminho/query. O navegador pode chamar /api/v1/players na mesma origem da interface.
+Esse hostname interno e as credenciais MySQL não são enviados ao navegador.
+A página inicial ainda não faz consultas de negócio. Instruções completas no
+[README principal](../README.md).
 
-Na pasta frontend, no Ubuntu 24.04 ou PowerShell:
+## Desenvolvimento local
 
-```sh
+Node.js 22.14.0 com npm. O projeto aceita Node ^20.20.2 ou ^22.12.0, mas recomenda
+22.14.0 para satisfazer também as ferramentas do lockfile. Na pasta frontend,
+com a porta 5173 livre:
+
+~~~sh
 npm ci
 npm run dev
-```
+~~~
 
-Execute `npm ci` apenas na primeira preparação ou quando o lockfile mudar.
-No dia a dia, basta `npm run dev`. Pare com `Ctrl+C`.
-O servidor fica em http://localhost:5173, com porta fixa.
+Vite atende http://localhost:5173 e encaminha /api para http://localhost:8080.
+Inicie o backend separadamente para chamadas à API. Pare o servidor com Ctrl+C.
+Para conferir o código e gerar assets:
 
-Para verificar o código e gerar a versão de entrega:
-
-```sh
+~~~sh
 npm run lint
 npm run build
-```
+~~~
 
-Para conferir o build gerado:
-
-```sh
-npm run preview
-```
-
-Preview em http://localhost:4173. Os comandos de build e lint terminam sozinhos.
-Não há teste de componente/e2e nem formatador configurado nesta etapa; não há
-atendimento integral ao diferencial F5. Nenhuma instalação global é necessária.
+npm run preview permite conferir assets em http://localhost:4173, sem o proxy
+de desenvolvimento; para testar a comunicação integrada, use Docker ou npm run dev.
 
 ## Variáveis, estrutura e bibliotecas
 
-O frontend ainda não usa variáveis de ambiente, conforme .env.example. Não há
-credenciais MySQL no navegador. A futura API fica em http://localhost:8080/api/v1;
-consumo e camada de cliente ainda não implementados.
-
-src/main.tsx inicializa React; src/App.tsx exibe apenas identificação inicial;
-src/index.css contém estilo básico; vite.config.ts configura plugin e portas;
-tsconfig*.json habilitam TypeScript estrito. React/React DOM renderizam a tela;
-Vite e plugin React fornecem desenvolvimento/build; TypeScript e tipos verificam
-código; ESLint, typescript-eslint e plugins React verificam convenções/hooks;
-globals define o ambiente de navegador. As bibliotecas além da stack são apenas
-ferramentas locais de desenvolvimento, declaradas em package.json.
-Dockerfile usa a imagem pública Node para compilar e Nginx para servir os
-arquivos estáticos; nginx.conf preserva futuras rotas da interface.
+Não há variáveis VITE_* necessárias. Nunca coloque senhas nessas variáveis:
+seu conteúdo é público no navegador. .env.example explica essa restrição.
+src/main.tsx inicializa React; src/App.tsx mostra a identificação inicial;
+src/index.css fornece estilos; vite.config.ts define plugin, portas e proxy;
+nginx.conf define rotas estáticas e proxy de produção. tsconfig*.json configura
+TypeScript estrito. React/React DOM renderizam a interface; Vite e plugin React
+constroem assets; TypeScript/tipos verificam o código; ESLint, typescript-eslint,
+globals e plugins React verificam convenções e hooks. Versões exatas no lockfile.
 
 ## Decisões e premissas
 
-Nome exibido PasseFrontend e package npm passe-frontend (minúsculas, convenção
-npm); diretório frontend/ preservado conforme enunciado. O template oficial foi
-reduzido à identificação do projeto; contador e logos foram removidos.
-Não há fidelidade visual exigida ao mockup. O nome Passe foi adotado a partir
-da referência ao mockup do enunciado.
+O template foi reduzido à identificação do projeto, removendo logos e contador.
+O proxy usa caminhos relativos, evitando URLs de máquinas específicas no bundle.
+Fórmulas e regras de negócio pertencem ao backend.
 
 ## Funcionalidades não implementadas
 
-Todos os itens F01–F14, formulários, integração API, feedback e estados de listas,
-responsividade das telas de negócio, testes de interface e formatação.
+Telas de negócio, formulários, consumo de dados nos componentes, feedback/estados
+de listas, responsividade dessas telas, testes de interface e formatador.
 
 ## Uso de inteligência artificial
 
-Codex auxiliou a recriação usando o template oficial react-ts e a adaptação de
-App.tsx, index.css, index.html, package.json, configuração Vite e documentação,
-para validar apenas a estrutura sem funcionalidades. Foram aceitos o template e
-as ferramentas de lint; removidos logos e contador; nomes ajustados por instrução
-do candidato. Instalação do scaffold anterior não concluída foi substituída por
-nova instalação local e lockfile.
+OpenAI Codex apoiou o scaffold oficial e a adaptação de App.tsx, index.css,
+index.html, package.json, Vite, Docker/Nginx e documentação. Foram aceitos template,
+lint e proxy; logos/contador foram removidos e nomes ajustados. A instalação local
+anterior incompleta foi substituída por scaffold e lockfile válidos. Não foram
+criadas telas de negócio nesta etapa. Revisão final cabe aos mantenedores.

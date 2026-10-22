@@ -1,223 +1,303 @@
-﻿# Passe
+# Passe
 
-Estrutura inicial do desafio SENAI/PE CÓD. 237: **PasseBackend** e
-**PasseFrontend**. Ainda não há funcionalidades de negócio. A configuração
-não representa atendimento aos critérios funcionais da banca.
+O Passe é uma aplicação fullstack com Spring Boot, React e MySQL. Docker Compose
+constrói e inicia os serviços integrados sem instalar Java, Maven, Node.js ou MySQL
+no computador. O backend implementa jogadores, clubes, mercado, contratos, histórico
+financeiro/CSV, escalações, partidas e classificação. A interface React ainda é
+uma estrutura inicial, sem telas de negócio.
 
-## 1. Pré-requisitos
+### Funcionalidades implementadas no backend
 
-Caminho principal para Ubuntu 24.04, Windows ou macOS com containers Linux:
-**Docker Engine/Desktop e Docker Compose v2.20 ou superior**, em execução.
-Internet é necessária para baixar imagens e dependências na primeira execução.
-No Windows, Docker Desktop utiliza WSL 2/virtualização habilitada.
-Se o instalador ou a ativação do componente Windows pedir reinicialização,
-reinicie uma vez e abra Docker Desktop antes de executar o comando abaixo.
+- Jogadores: cadastro, consulta, edição, condição, exclusão lógica, filtros,
+  ordenação e paginação; cálculo de overall e valor de mercado.
+- Clubes: criação, listagem, elenco, caixa, valor do elenco e patrimônio.
+- Mercado: compra e venda, fidelidade contratual, taxas, multas e comissões;
+  histórico financeiro com totais filtrados e exportação CSV.
+- Liga: escalações, partidas com seis duelos, histórico e classificação.
+- Operação: transações atômicas, respostas de erro JSON, logs por requisição
+  e testes automatizados com banco isolado.
 
-O Compose fornece Java 21, Maven 3.10.0, Node.js 22.12.0 e MySQL 8.0.46;
-não é necessário instalar esses runtimes no computador para esse caminho.
-Spring Boot 3.5.16, React 19, TypeScript 5.8 e Vite 6 respeitam a seção
-**Stack obrigatória** do enunciado. Versões npm exatas estão em package-lock.json.
+## 1. Tecnologias e pré-requisitos
 
-## 2. Banco: criação e preservação
+Docker Engine ou Docker Desktop com containers Linux e Docker Compose **v2.20+**,
+em execução. Internet para imagens/dependências. Portas locais **5173**, **8080**
+e **3307** livres; testes locais usam também **13308**.
+Git é necessário somente para clonar o repositório.
 
-O Compose cria um MySQL próprio, com os bancos `passedb` e `passedb_test`.
-Os dados ficam no volume `passe_mysql_data`, sem conexão com o MySQL já instalado.
-A porta local é **3307**, para preservar o servidor existente na porta 3306.
-Na primeira inicialização, a imagem cria `passedb` e o usuário `passe_app`;
-[script versionado](backend/scripts/docker-init.sh) cria `passedb_test` e
-`passe_test`, com permissão somente de leitura para os testes desta etapa.
-Charset utf8mb4 e collation utf8mb4_0900_as_ci preservam diferenças de acentos.
+| Componente | Versão |
+|---|---|
+| Backend | Java 21, Spring Boot 3.5.16, Maven 3.10.0 |
+| Frontend | React 19.3.1, TypeScript 5.8.3, Vite 6.4.4, Node.js 22.14.0 no build |
+| Banco | MySQL 8.0.46 |
+| Servidor estático | Nginx 1.28 Alpine |
 
-Nenhum comando deste roteiro apaga bancos ou volumes. `docker compose stop`
-preserva os dados. Não execute remoção de volumes ou recriação de bancos existentes.
-**Recriação do esquema e sete tabelas obrigatórias continuam pendentes** da etapa
-de negócio/autorização específica. Portanto, B3 ainda não está atendido integralmente.
+Containers Linux exercitados com Docker Desktop/WSL2 em Windows. O build e os testes
+Java usam Ubuntu 24.04 Noble dentro do container. Não houve ensaio em instalação
+limpa de Ubuntu, em macOS ou em Linux ARM64. O tempo inicial depende da rede e dos
+recursos disponíveis; os scripts não exigem ferramentas específicas do host.
 
-## 3. Instalação e execução — caminho principal da banca
+## 2. Instalação rápida
 
-Na raiz do repositório, no terminal:
+Clone o repositório e entre na pasta:
 
-```sh
-docker compose up --build -d --wait --wait-timeout 300
-```
+~~~sh
+git clone https://github.com/GuilhermePMedeiros/passe-fullstack.git
+cd passe-fullstack
+~~~
 
-Esse é o mesmo comando no PowerShell e no Ubuntu. Não exige editar arquivos,
-preencher credenciais ou instalar Maven/npm globalmente. As imagens são públicas
-de terceiros e as aplicações são construídas a partir deste repositório.
-O Compose espera o MySQL ficar disponível antes de iniciar a API, e a API antes
-do frontend, conforme a [documentação Docker](https://docs.docker.com/compose/how-tos/startup-order/).
+A implementação descrita está na branch `dev`. Após clonar:
 
-O backend é compilado na imagem oficial `maven:3.10.0-eclipse-temurin-21-noble`,
-com Maven já instalado, sem executar o Maven Wrapper durante o build ou os testes
-em containers. A imagem final `eclipse-temurin:21-jre-jammy` recebe somente o JAR
-e executa com usuário sem privilégios. O Wrapper continua disponível para
-desenvolvimento local. Imagens e dependências ainda exigem acesso à internet;
-não há garantia de funcionamento offline.
+~~~sh
+git switch dev
+~~~
 
-- Frontend: **http://localhost:5173**.
-- Origem da API: **http://localhost:8080**. Prefixo futuro: `/api/v1`.
-- Banco pelo Workbench: localhost, porta 3307, usuário passe_app,
-  senha pública de desenvolvimento passe_app_local, banco passedb.
+Na raiz `passe-fullstack`, inicie todos os serviços:
 
-A API retorna 404 na raiz porque ainda não há controllers de negócio.
-O frontend exibe somente a estrutura inicial. Isso não comprova os roteiros da prova.
-O healthcheck da API aceita HTTP 2xx ou esse 404; respostas 5xx falham.
-O MySQL é verificado com `SELECT 1` autenticado no banco da aplicação, e o Nginx
-com uma requisição HTTP à página inicial. A checagem HTTP não monitora continuamente
-a conexão da API ao banco; os testes de integração abaixo verificam a conexão real.
+~~~sh
+docker compose up --build -d
+~~~
 
-Para conferir serviços e erros:
+Não é necessário criar ou editar .env. Os padrões locais já estão configurados.
+As imagens são construídas com este código e imagens públicas de terceiros.
+O MySQL inicializa antes da API; o frontend aguarda a API responder. Para aguardar
+a conclusão dos healthchecks e conferir os serviços:
 
-```sh
-docker compose ps
-docker compose logs --tail 100 backend db frontend
-```
-
-Para auditar o build sem cache, na raiz (com as portas 3307, 8080 e 5173 livres):
-
-```sh
-docker compose config --quiet
-docker compose build --no-cache
+~~~sh
 docker compose up -d --wait --wait-timeout 300
 docker compose ps
-docker compose logs --tail 100
-```
+~~~
 
-O build do frontend executa `npm ci`, `npm run lint` e `npm run build` dentro da
-imagem Node. O build do JAR compila também os testes, mas a execução deles fica
-no serviço `tests`, pois requer o MySQL em execução. Execute a seção seguinte
-para validar o backend; subir os serviços, sozinho, não comprova os testes.
+| Serviço | Endereço |
+|---|---|
+| Interface | http://localhost:5173 |
+| Origem da API | http://localhost:8080 |
+| API direta | http://localhost:8080/api/v1/players |
+| API pelo proxy da interface | http://localhost:5173/api/v1/players |
+| MySQL para ferramentas locais | localhost:3307, banco passedb |
 
-Validação em 17/10/2026: configuração Compose e build sem cache passaram em
-containers Linux no Docker Desktop/WSL 2. Uma cópia dos arquivos versionados com
-esta correção, sem `.env`, `node_modules` ou `target`, iniciou com volume novo e
-os três serviços saudáveis. Os três testes de integração passaram nessa cópia,
-sem falhas ou testes ignorados. Isso ainda não é um ensaio em VM Ubuntu 24.04 limpa.
-O npm emitiu `EBADENGINE` para `eslint-visitor-keys@5.0.1` com Node 22.12.0;
-lint e build passaram, mas o aviso de compatibilidade permanece pendente.
+Não há Swagger/OpenAPI disponível. Os 19 endpoints e seus contratos estão
+documentados no [README do backend](backend/README.md#4-endpoints).
 
-Para parar preservando dados:
+O navegador pode usar caminhos relativos /api/v1/.... O Nginx encaminha /api/ para
+backend:8080 na rede Docker, preservando caminho e query string. Esse hostname
+interno não é utilizado pelo navegador. A página React atual não consome dados de
+negócio; o proxy disponibiliza a comunicação para as próximas telas.
 
-```sh
+### Validação de instalação
+
+Em 21/10/2026, um ensaio em Windows com Docker Desktop/WSL2, utilizando um daemon
+Linux AMD64 isolado, partiu sem imagens Docker e com cache de build de **0 B**.
+Os três serviços ficaram saudáveis em **4 minutos e 7 segundos**. Foram verificadas
+as sete tabelas, a disponibilidade da API, o proxy e os arquivos JavaScript/CSS do
+frontend. A suíte executou **484 testes, sem falhas, erros ou testes ignorados**.
+O tempo da suíte é separado do tempo de instalação.
+
+A medição não inclui a instalação do Docker nem a preparação do daemon de ensaio.
+Foram utilizados Docker 29.8.2 e Compose 5.6.0. O tempo varia com hardware, conexão
+e ambiente; esse resultado não representa medição em Ubuntu 24.04 instalado no
+host nem certificação de compatibilidade com todas as plataformas. A inicialização
+dos serviços não comprova a conclusão das telas de negócio do frontend.
+
+## 3. Criação do banco e persistência
+
+Na primeira instalação, a imagem MySQL cria passedb e o usuário da aplicação.
+backend/scripts/docker-init.sh aplica 000-core-schema.sql e
+002-entidades-restantes.sql. São criadas sete tabelas vazias: jogadores, clubes,
+contratos, transacoes, escalacoes, partidas e duelos_partida, com suas restrições.
+Não há carga automática de exemplos. O banco de infraestrutura legado passedb_test
+também é criado, mas as suítes usam um servidor de testes separado.
+
+O volume nomeado mysql_data preserva os registros. Os scripts iniciais rodam somente
+quando o volume está vazio. Hibernate usa ddl-auto=none e o Spring não executa
+inicialização SQL adicional. Iniciar/encerrar a API não limpa registros. CREATE
+TABLE IF NOT EXISTS não converte estruturas legadas divergentes: inspecione os dados
+antes de aplicar uma migração. Detalhes em [scripts](backend/scripts/README.md).
+
+## 4. Reiniciar e encerrar
+
+Todos os comandos desta seção são executados na raiz. Para parar sem apagar dados:
+
+~~~sh
 docker compose stop
-```
+~~~
 
-Para iniciar novamente, sem mudanças de código:
+Para iniciar novamente e aguardar a disponibilidade:
 
-```sh
+~~~sh
 docker compose up -d --wait --wait-timeout 300
-```
+~~~
 
-### Testar a infraestrutura com MySQL 8 real
+Para reiniciar os containers existentes:
 
-Com o Docker disponível, na raiz:
+~~~sh
+docker compose restart
+~~~
 
-```sh
+Para encerrar e iniciar posteriormente, preservando o volume:
+
+~~~sh
+docker compose down
+docker compose up -d --wait --wait-timeout 300
+~~~
+
+Para conferir status e logs:
+
+~~~sh
+docker compose ps
+docker compose logs --tail 100 db backend frontend
+~~~
+
+`stop`, `restart` e `down` sem `-v` preservam o volume. **Não use down -v para reiniciar**:
+essa opção remove volumes e apaga os bancos correspondentes.
+
+## 5. Testes isolados
+
+Na raiz:
+
+~~~sh
 docker compose --profile tools build tests
+docker compose --profile tools up -d --wait --wait-timeout 180 tests-db
 docker compose --profile tools run --rm tests
-```
+~~~
 
-O comando termina sozinho e propaga falha do Maven. Os três testes verificam
-MySQL 8/passedb_test com SELECT 1 e conexão somente leitura, inicialização HTTP,
-e CORS permitido/recusado. Não gravam dados. Relatórios ficam em
-`docs/evidencias/mysql`, pasta criada na execução e ignorada pelo Git.
-Não é necessário obter essa pasta antes de executar os testes.
-Não são testes de negócio nem pontuam, sozinhos,
-o diferencial que exige teste do cálculo do valor de mercado.
+O comando termina sozinho e propaga falhas. Inclui cálculos, validações HTTP,
+persistência, concorrência, contratos e partidas. tests-db é outro servidor MySQL,
+com schema passedb_test e credenciais próprias. O helper das integrações de escrita
+usa somente TEST_DB_* e recusa outro schema. Fixtures têm rollback ou limpeza dos
+IDs próprios. Não execute suítes simultaneamente no mesmo servidor de testes.
+Relatórios são gerados em docs/evidencias/mysql, ignorados pelo Git.
+No ensaio de instalação descrito acima, `docker compose --profile tools run --rm tests`
+concluiu os 484 testes com sucesso. Esse total é o resultado daquela versão;
+não é um número fixado na configuração da suíte.
 
-### Programar pelo STS e Vite, com atualização durante o desenvolvimento
+Para recriar somente o banco de testes, pare as suítes e execute:
 
-Pare a execução completa para liberar as portas de API/frontend e suba só o banco:
+~~~sh
+docker compose --profile tools stop tests-db
+docker compose --profile tools up -d --wait --wait-timeout 180 tests-db
+~~~
 
-```sh
-docker compose stop backend frontend
-docker compose up -d --wait --wait-timeout 300 db
-```
+tests-db usa tmpfs: parar esse serviço descarta apenas seus dados. O próximo início
+executa docker-test-init.sh e recria sete tabelas vazias. O banco normal permanece intacto.
 
-Instale/use **Java 21** no STS e **Node.js 22.12.0 com npm** para execução local.
-No STS, importe `backend/pom.xml` como projeto Maven e execute
-`PasseBackendApplication`. **Não precisa configurar usuário e senha na IDE**:
-os padrões locais correspondem ao banco isolado do Compose.
-Remova apenas as variáveis antigas da configuração de execução desse projeto
-se elas apontarem para outro banco; não altere variáveis globais do computador.
+## 6. Recriação intencional do banco
 
-Em outro terminal, na pasta `frontend`, prepare uma vez e inicie:
+**Operação destrutiva, separada do uso normal:** apaga os registros de passedb no
+serviço db e recria as sete tabelas vazias. Use somente quando quiser descartar
+esses registros. Na raiz, com db em execução:
 
-```sh
-npm ci
-npm run dev
-```
+~~~sh
+docker compose stop backend
+docker compose exec -T db bash /opt/passe-sql/recreate-database.sh --confirm-reset-passedb
+docker compose up -d --wait --wait-timeout 300 backend
+~~~
 
-Diariamente basta `npm run dev`. Para testes pelo Maven no Windows, dentro de
-`backend`, use `.\mvnw.cmd -B -ntp verify`; no Ubuntu, `sh ./mvnw -B -ntp verify`.
-O banco isolado precisa estar no ar. Build/lint frontend: `npm run lint` e
-`npm run build`. Detalhes: [backend](backend/README.md) e [frontend](frontend/README.md).
+O script exige a confirmação literal; nunca é chamado automaticamente. Não remove
+volumes, não altera o MySQL instalado no host e não recria tests-db.
 
-## 4. Variáveis de ambiente
+## 7. Variáveis de ambiente
 
-[.env.example](.env.example) contém valores fictícios completos do Compose.
-Copiá-lo para `.env` é opcional, pois o comando já tem os mesmos padrões.
-Não são credenciais do MySQL existente. Senhas reais nunca devem ir para o Git.
-A regra do barema B2 exclui senhas locais de desenvolvimento do conceito de
-credencial real; a aplicação continua lendo DB_* do ambiente.
+.env.example contém somente valores locais fictícios. O Compose funciona sem esse
+arquivo. Para personalizar, copie-o para .env antes de criar o volume. Nunca publique
+credenciais reais. Alterar variáveis não muda usuários já existentes no MySQL.
+Spring não carrega .env automaticamente fora do Compose.
 
-| Variável | Padrão local e finalidade |
-| --- | --- |
-| MYSQL_ROOT_PASSWORD | passe_root_local; administrador exclusivo do container |
-| DB_USERNAME / DB_PASSWORD | passe_app / passe_app_local; aplicação |
-| TEST_DB_USERNAME / TEST_DB_PASSWORD | passe_test / passe_test_local; testes somente leitura |
-| CORS_ORIGIN | http://localhost:5173; única origem permitida |
-| DB_URL | Dentro do Compose: jdbc:mysql://db:3306/passedb; STS: localhost:3307/passedb |
-| TEST_DB_URL | Dentro do Compose: jdbc:mysql://db:3306/passedb_test; Maven local: localhost:3307/passedb_test |
+| Variável | Padrão / uso |
+|---|---|
+| MYSQL_ROOT_PASSWORD | passe_root_local, administração do container db |
+| DB_USERNAME / DB_PASSWORD | passe_app / passe_app_local |
+| TEST_DB_USERNAME / TEST_DB_PASSWORD | passe_test / passe_test_local, somente schema de testes |
+| MYSQL_PORT | 3307, MySQL no loopback do host |
+| BACKEND_PORT / FRONTEND_PORT | 8080 / 5173, portas HTTP locais |
+| TEST_MYSQL_PORT | 13308, acesso local ao servidor de testes |
+| DB_URL | Docker: jdbc:mysql://db:3306/passedb; Java local: jdbc:mysql://localhost:3307/passedb |
+| TEST_DB_URL | Docker: jdbc:mysql://tests-db:3306/passedb_test; Java local: jdbc:mysql://localhost:13308/passedb_test |
+| CORS_ORIGIN | http://localhost:5173, origem permitida pelo backend |
 
-As URLs internas são definidas pelo Compose; os padrões Spring usam a porta do
-computador. Se personalizar credenciais, faça isso antes da criação do volume;
-alterar `.env` não altera usuários já criados no MySQL. Não tente corrigir acesso
-apagando dados. O frontend atual não precisa de variáveis nem recebe senhas.
+DB_URL e TEST_DB_URL são fixados nos serviços do Compose; variáveis externas com
+esses nomes destinam-se ao Java local. Ao mudar a porta da interface, ajuste também
+CORS_ORIGIN. O frontend não recebe senhas. Serviços comunicam-se pela rede privada
+do projeto Compose. Portas publicadas escutam somente em 127.0.0.1. O acesso local
+ao MySQL foi mantido para IDEs e ferramentas de desenvolvimento.
 
-## 5. Estrutura e bibliotecas
+## 8. Desenvolvimento local, pastas e bibliotecas
 
-- `backend/`: Java/Spring Boot, pacote br.com.passebackend, testes e Dockerfile.
-- `frontend/`: template oficial React/TypeScript/Vite, lockfile, Dockerfile e Nginx.
-- `compose.yaml`: banco, API, interface e serviço separado de testes.
+Para Java local: Java 21 e Maven Wrapper 3.10.0. Suba db na raiz com
+os comandos do [README do backend](backend/README.md#1-pré-requisitos-e-execução).
+Eles descrevem a execução por Maven Wrapper, o perfil de testes e as portas usadas.
 
-Motivo de cada biblioteca nos READMEs de [backend](backend/README.md) e
-[frontend](frontend/README.md). Nginx serve os arquivos estáticos e permite futuras
-rotas da interface. Nenhuma biblioteca de negócio ou ferramenta global adicional
-foi introduzida no projeto.
+Para React local: Node.js 22.14.0 com npm. Veja [frontend/README.md](frontend/README.md).
+O Vite também encaminha /api para a API local.
 
-## 6. Decisões e premissas
+- backend/: API Java e domínios player, club, contract, transaction, market, lineup e match.
+- frontend/: React/TypeScript/Vite e Nginx.
+- compose.yaml: serviços integrados e perfil de testes tools.
+- compose.backend-audit.yaml: validação separada do backend, com volume próprio.
 
-Nomes escolhidos pelo candidato: PasseBackend, PasseFrontend, passedb e passedb_test.
-Passe aparece no link do mockup, não como obrigação explícita de nome do projeto.
-A porta 3307 evita interferência com o MySQL já instalado. Hibernate não altera
-esquema; scripts de inicialização executam somente em volume vazio. Não há H2.
-CORS é restrito conforme **Convenções da API** e barema **B2**.
+Spring Web atende HTTP; Jackson serializa JSON; Spring Data JPA/Hibernate tratam
+persistência/transações; Validation fornece constraints; Connector/J conecta ao MySQL;
+SLF4J/Logback registra requisições; Spring Boot Test fornece JUnit, Mockito, AssertJ
+e MockMvc. React/React DOM renderizam a interface; Vite e plugin React constroem
+assets; TypeScript verifica tipos; ESLint, typescript-eslint, globals e plugins React
+verificam convenções/hooks. Nginx serve assets e proxy. Versões Java são gerenciadas
+pelo POM e versões npm pelo package-lock.json. Documentação adicional:
 
-Ambiente padronizado pelo Compose conforme barema **§3.2** e enunciado
-**Requisitos do README.md**, itens 1–5. O ensaio real em Ubuntu 24.04 e os limites
-de tempo da banca ainda precisam de evidência; arquivos configurados não bastam.
-O regulamento principal e eventuais erratas não foram fornecidos.
+- [Backend: execução, arquitetura e contratos da API](backend/README.md).
+- [Frontend: Docker, desenvolvimento local e limitações](frontend/README.md).
+- [Scripts de criação e recriação do banco](backend/scripts/README.md).
 
-## 7. Funcionalidades não implementadas
+## 9. Solução de problemas
 
-B01–B22 e F01–F14, esquema obrigatório, migrações/recriação, tratamento contratual
-de erros com message, integração funcional, testes de negócio/interface, OpenAPI,
-logs por requisição e formatação. Docker só poderá pontuar integralmente quando
-a lista de jogadores também funcionar. Nenhum requisito foi marcado aprovado.
-Commit, push e envio continuam dependendo de autorização.
-Prazo interno: 23/10/2026 às 16h; conferir regulamento para prazo oficial.
+~~~sh
+docker compose ps
+docker compose logs --tail 100 db backend frontend
+docker compose config --quiet
+~~~
 
-## 8. Uso de inteligência artificial
+Porta ocupada: pare a aplicação correspondente ou personalize as portas da seção 7.
+Erro de download: confira a conexão e repita o build. Autenticação após mudar .env:
+os usuários do volume mantêm as credenciais originais; não apague dados para corrigir
+configuração. Schema legado: inspecione antes de alterar. A raiz / da API retorna
+404; use /api/v1/players. Não há endpoint em /api/v1 sem recurso.
 
-Codex auxiliou análise dos quatro documentos, POM, estrutura Java/React,
-configurações, Dockerfiles, Compose, SQL de infraestrutura, testes e documentação.
-Aceitos Java 21/Boot 3/MySQL 8 e template Vite react-ts; descartados Boot 4 e H2.
-Nesta revisão foram aceitos ambiente isolado, padrões fictícios de desenvolvimento
-e testes somente leitura. A classe original de testes vazia foi preservada;
-novos testes estão em MySqlIntegrationTests. Nenhuma funcionalidade de negócio
-foi implementada. O candidato deve revisar e compreender o conteúdo antes da entrega.
-Na correção Docker de 17/10/2026, Codex substituiu o uso do Wrapper na imagem
-de build por Maven oficial com Java 21, restringiu o healthcheck HTTP e atualizou
-as instruções. A URL Maven 3.10.0 foi consultada e respondeu HTTP 200; a causa
-do download malsucedido no ambiente original não foi reproduzida.
+## 10. Decisões e premissas
+
+Controllers mantêm try/catch explícito; BaseController padroniza respostas.
+Recusas usam 400/404/409 com message; falhas inesperadas retornam 500 sanitizado.
+Não há autenticação. Dinheiro usa BigDecimal/HALF_UP e cálculos únicos. Valores
+dinâmicos são calculados nas consultas; contratos, transações e duelos guardam
+snapshots. Operações de compra, venda, escalação, partida e condição DOENTE são atômicas.
+
+Datas usam Brasília (-03:00), inclusive sessão JDBC. Fidelidade entra em minutos e
+sai com segundos. Tabelas novas usam TIMESTAMP; DATETIME legado não é convertido
+automaticamente. Nomes usam Unicode NFD sem Mn, caixa ignorada, pontos de código e
+id. Lineup mantém LineupId próprio. Vínculos legados não geram contratos fictícios;
+venda inconsistente retorna 409. Bloqueios seguem jogador antes de clube e IDs crescentes.
+
+Imagens de build/runtime são separadas e o backend executa sem privilégios.
+Healthchecks verificam tabelas no MySQL, GET /api/v1/players com 200 no backend e
+HTTP no Nginx. Não substituem testes de todas as funcionalidades. O proxy resolve
+backend pelo DNS interno Docker, inclusive após troca de IP.
+
+## 11. Funcionalidades não implementadas
+
+Telas de jogadores, clubes, mercado e liga, seus formulários, feedback e estados de
+lista ainda não foram implementados no frontend. Não há testes de interface,
+formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
+e logs por requisição estão implementados. A instalação dos containers não significa
+que a interface de negócio esteja concluída.
+
+## 12. Uso de inteligência artificial
+
+OpenAI Codex apoiou análise de requisitos/código, implementação e auditoria dos
+domínios Java, testes, scripts SQL, Docker/Compose, proxy e documentação. A finalidade
+foi conferir contratos, investigar falhas e reduzir configuração manual. Foram aceitos
+Java 21/Spring Boot 3/MySQL real, DTOs, cálculos únicos, transações e testes isolados.
+Foram ajustados erros HTTP, Unicode, fuso, bootstrap, persistência e configuração
+do frontend. Foram descartados Boot 4, H2 na aplicação, abstrações adicionais para
+LineupId e tratamento automático de exceções nos controllers. O template React foi
+reduzido à estrutura inicial; telas de negócio não foram criadas nesta etapa.
+Na revisão dos READMEs, foram conferidos o código e os registros de instalação
+e testes; apenas a documentação foi alterada, sem repetir a instalação ou o reset.
+Relatórios gerados por IA permanecem locais. Resultados declarados dependem de
+execuções reais; a revisão das alterações cabe aos mantenedores.
