@@ -6,6 +6,9 @@ import { WorkspaceLayout } from './layouts/WorkspaceLayout'
 const PlayersPage = lazy(() => import('@/features/players/pages/PlayersPage').then(module => ({ default: module.PlayersPage })))
 const ClubsPage = lazy(() => import('@/features/clubs/pages/ClubsPage').then(module => ({ default: module.ClubsPage })))
 const ClubDetailsPage = lazy(() => import('@/features/clubs/pages/ClubDetailsPage').then(module => ({ default: module.ClubDetailsPage })))
+const MatchesPage = lazy(() => import('@/features/matches/pages/MatchesPage').then(module => ({ default: module.MatchesPage })))
+const MatchDetailsPage = lazy(() => import('@/features/matches/pages/MatchDetailsPage').then(module => ({ default: module.MatchDetailsPage })))
+const StandingsPage = lazy(() => import('@/features/standings/pages/StandingsPage').then(module => ({ default: module.StandingsPage })))
 
 function PendingSection({ title }: { title: string }) {
   
@@ -43,8 +46,9 @@ export function AppRoutes() {
         <Route path="/players" element={<Suspense fallback={<p role="status">Carregando página…</p>}><PlayersPage /></Suspense>} />
         <Route path="/clubs" element={<Suspense fallback={<p role="status">Carregando página…</p>}><ClubsPage /></Suspense>} />
         <Route path="/clubs/:id" element={<Suspense fallback={<p role="status">Carregando página…</p>}><ClubDetailsPage /></Suspense>} />
-        <Route path="/matches" element={<PendingSection title="Partidas" />} />
-        <Route path="/standings" element={<PendingSection title="Classificação" />} />
+        <Route path="/matches" element={<Suspense fallback={<p role="status">Carregando página…</p>}><MatchesPage /></Suspense>} />
+        <Route path="/matches/:id" element={<Suspense fallback={<p role="status">Carregando página…</p>}><MatchDetailsPage /></Suspense>} />
+        <Route path="/standings" element={<Suspense fallback={<p role="status">Carregando página…</p>}><StandingsPage /></Suspense>} />
         <Route path="/transfers/buy" element={<PurchaseRedirect />} />
       </Route>
       <Route path="*" element={<PendingSection title="Página não encontrada" />} />

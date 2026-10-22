@@ -7,10 +7,15 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 5173,
     strictPort: true,
     proxy: { '/api': 'http://localhost:8080' },
   },
-  preview: { host: 'localhost', port: 4173, strictPort: true },
+  preview: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    proxy: { '/api': 'http://localhost:8080' },
+  },
 })

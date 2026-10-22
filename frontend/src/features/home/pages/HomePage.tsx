@@ -16,7 +16,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
   { title: 'Compra', description: 'Valor + taxa, até 50% do caixa, com contrato de fidelidade.', to: '/players?free=true', icon: ShoppingCart },
   { title: 'Venda', description: 'Multa antes do fim da fidelidade e comissão sobre o lucro.', to: '/clubs?action=sell', icon: HandCoins },
   { title: 'Histórico', description: 'Toda compra e venda fica registrada, com totais e CSV.', to: '/clubs?tab=history', icon: History },
-  { title: 'Liga', description: 'Escale os titulares no clube. Partidas e classificação em desenvolvimento.', to: '/clubs?tab=lineup', icon: Trophy },
+  { title: 'Liga', description: 'Escale 5 titulares e jogue partidas que entram na classificação.', to: '/matches', icon: Trophy },
 ]
 
 export function HomePage() {

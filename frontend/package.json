@@ -18,6 +18,8 @@
     "test:clubs": "node tests/clubs.browser.mjs",
     "test:transfers": "node tests/transfers.browser.mjs",
     "test:navigation": "node tests/navigation.browser.mjs",
+    "test:league": "node tests/league.browser.mjs",
+    "test:official": "node tests/official.browser.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

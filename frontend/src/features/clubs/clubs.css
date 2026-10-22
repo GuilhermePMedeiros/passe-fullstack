@@ -239,6 +239,14 @@
   margin: 0 auto 1rem;
 }
 
+.history-positive {
+  color: var(--success-foreground);
+}
+
+.history-negative {
+  color: var(--destructive);
+}
+
 .club-lineup-layout,
 .lineup-preview {
   display: grid;

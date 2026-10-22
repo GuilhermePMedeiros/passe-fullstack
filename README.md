@@ -4,8 +4,9 @@ O Passe é uma aplicação fullstack com Spring Boot, React e MySQL. Docker Comp
 constrói e inicia os serviços integrados sem instalar Java, Maven, Node.js ou MySQL
 no computador. O backend implementa jogadores, clubes, mercado, contratos, histórico
 financeiro/CSV, escalações, partidas e classificação. A interface React possui
-a tela inicial com resumo real da liga e a feature Jogadores integrada à API.
-As telas de clubes, mercado e liga continuam pendentes.
+a tela inicial com resumo real da liga, Jogadores, Clubes, compra/venda,
+histórico de transações/CSV, escalações, partidas com seis duelos e classificação,
+integrados à API.
 
 ### Funcionalidades implementadas no backend
 
@@ -57,6 +58,11 @@ Na raiz `passe-fullstack`, inicie todos os serviços:
 ~~~sh
 docker compose up --build -d
 ~~~
+
+A URL oficial é **http://localhost:5173/** para a Home e todos os módulos.
+Use o mesmo comando após mudanças no código: o Nginx serve o build da imagem,
+não os arquivos locais ao vivo. `docker compose restart` sozinho não incorpora
+alterações do frontend. Não abra outro Vite em 5174 para acessar uma versão diferente.
 
 Não é necessário criar ou editar .env. Os padrões locais já estão configurados.
 As imagens são construídas com este código e imagens públicas de terceiros.
@@ -231,6 +237,13 @@ Eles descrevem a execução por Maven Wrapper, o perfil de testes e as portas us
 Para React local: Node.js 22.14.0 com npm. Veja [frontend/README.md](frontend/README.md).
 O Vite também encaminha /api para a API local.
 
+Docker/Nginx é o modo integrado documentado. Vite local é uma alternativa de
+desenvolvimento na mesma porta 5173; não execute os dois frontends simultaneamente.
+O Vite falha se a porta estiver ocupada. Para trocar intencionalmente para Vite,
+pare somente o frontend identificado com `docker compose stop frontend`,
+mantendo banco e API, e siga o README do frontend. Para voltar ao modo integrado,
+encerre esse Vite com Ctrl+C e execute `docker compose up --build -d` na raiz.
+
 - backend/: API Java e domínios player, club, contract, transaction, market, lineup e match.
 - frontend/: React/TypeScript/Vite e Nginx.
 - compose.yaml: serviços integrados e perfil de testes tools.
@@ -256,7 +269,13 @@ docker compose logs --tail 100 db backend frontend
 docker compose config --quiet
 ~~~
 
-Porta ocupada: pare a aplicação correspondente ou personalize as portas da seção 7.
+Porta ocupada: identifique o processo e escolha um dos modos de execução descritos.
+Antes de parar algo, identifique o processo e o projeto. Para a execução oficial,
+mantenha a porta 5173: não contorne conflito com outro servidor/porta. Se aparecer
+uma versão antiga, execute `docker compose up --build -d` e confira a interface
+em 5173. Para validar Home, módulos, URLs diretas/F5, menu, Voltar/Avançar e 375 px
+no Nginx já em execução, rode `npm run test:official` em `frontend/` com Chrome
+e as dependências npm instaladas. O teste não inicia servidor nem grava na API.
 Erro de download: confira a conexão e repita o build. Autenticação após mudar .env:
 os usuários do volume mantêm as credenciais originais; não apague dados para corrigir
 configuração. Schema legado: inspecione antes de alterar. A raiz / da API retorna
@@ -283,7 +302,8 @@ backend pelo DNS interno Docker, inclusive após troca de IP.
 
 ## 11. Funcionalidades não implementadas
 
-As telas de partidas/classificação ainda não foram implementadas no frontend.
+As telas obrigatórias do fluxo estão implementadas no frontend; isso não
+representa certificação do roteiro sigiloso da banca.
 Clubes possui lista/cadastro, detalhes, elenco/contratos, venda, histórico/CSV e escalação.
 Jogadores possui listagem, filtros, cadastro, edição, condição, detalhes e
 exclusão lógica. A compra está integrada à lista, menu e detalhes dos jogadores livres.
@@ -291,7 +311,7 @@ A tela inicial e Jogadores possuem testes de componente e de navegador.
 Clubes também possui testes de formulário, escalação e navegador com API QA isolada.
 Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
 e logs por requisição estão implementados. A instalação dos containers não significa
-que a interface de negócio esteja concluída.
+que todos os cenários da interface tenham sido validados na VM da banca.
 
 ## 12. Uso de inteligência artificial
 
@@ -326,3 +346,8 @@ Na etapa Negociações, Codex inspecionou M01–M08/V01–V05, integrou a compra
 Foram aceitos componentes shadcn já instalados, valores da API e testes;
 estimativas de taxas/multas/caixa no frontend foram descartadas. Somente
 valor + taxa é somado para exibir o custo total, conforme permitido pela banca.
+Na etapa Histórico/Partidas/Classificação, Codex inspecionou H01–H05/L01–L05,
+ajustou os filtros do histórico e implementou as telas da liga. Foram aceitos
+componentes existentes e snapshots/ordenação da API; simular duelos ou recalcular
+classificação no frontend foi descartado. A integração local foi verificada
+por consultas GET, sem alterar dados; gravação de partidas usa fixtures nos testes.

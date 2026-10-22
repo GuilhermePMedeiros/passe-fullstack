@@ -439,7 +439,14 @@ input:focus-visible,
 
 .pagination-controls nav {
   width: auto;
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
+}
+
+.pagination-controls nav > ul {
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .pagination-controls [aria-disabled='true'] {

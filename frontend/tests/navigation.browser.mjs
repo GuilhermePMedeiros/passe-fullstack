@@ -72,8 +72,9 @@ try {
     ['/clubs/1?tab=history', 'Histórico de transações'],
     ['/clubs/1?tab=lineup', 'Titulares'],
     ['/clubs/999', 'Clube não encontrado'],
-    ['/matches', 'Partidas', 'pending'],
-    ['/standings', 'Classificação', 'pending'],
+    ['/matches', 'Partidas'],
+    ['/matches?create=true', 'Nova partida', 'dialog'],
+    ['/standings', 'Classificação'],
     ['/unknown-route', 'Página não encontrada', 'pending'],
   ]
   for (const [path, heading, kind] of routes) {
@@ -115,7 +116,7 @@ try {
       await page.getByRole('heading', { name: heading, exact: true }).waitFor()
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     }
-    for (const [name, target] of [['05', 'history'], ['06', 'lineup']]) {
+    for (const [name, target] of [['05', 'history']]) {
       await goHome()
       await page.getByRole('link', { name: new RegExp(`^${name}`) }).click()
       await page.locator('article a[href="/clubs/1?tab=' + target + '"]').first().waitFor()
@@ -130,6 +131,9 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
       await page.screenshot({ path: fileURLToPath(new URL(`home-${target}-${width}.png`, output)), fullPage: true })
     }
+    await goHome()
+    await page.getByRole('link', { name: /^06/u }).click()
+    await page.getByRole('heading', { name: 'Partidas', exact: true }).waitFor()
     await goHome()
     await page.getByRole('link', { name: /^04/u }).click()
     await page.getByText('Escolha um clube e use Vender na aba Elenco para negociar um jogador.').waitFor()

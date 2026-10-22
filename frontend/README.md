@@ -7,7 +7,8 @@ implementada a partir das imagens locais, com estatísticas reais e navegação.
 A rota `/players` implementa listagem, filtros, cadastro, edição, condição,
 detalhes e exclusão lógica com a API real. `/clubs` e `/clubs/:id` incluem
 cadastro, elenco/contratos, venda, histórico/CSV e escalação. Compra abre um
-diálogo integrado a Jogadores. Telas de partidas/classificação continuam pendentes.
+diálogo integrado a Jogadores. `/matches`, `/matches/:id` e `/standings` incluem
+partidas, detalhes com seis duelos históricos e classificação devolvida pela API.
 
 ## Instalação com Docker
 
@@ -20,6 +21,10 @@ docker compose up --build -d
 Interface em http://localhost:5173. Não é necessário instalar Node.js no host.
 O build usa Node.js 22.14.0, npm ci com package-lock.json, lint e compilação de
 produção. Nginx 1.28 serve os assets e preserva rotas da interface.
+Essa é a URL oficial de todos os módulos. Após alterar o código, repita
+`docker compose up --build -d` na raiz para incorporar as mudanças à imagem;
+reiniciar o container não reconstrói o build. Não disponibilize outra versão
+em 5174 para contornar imagem antiga ou conflito de porta.
 O proxy /api/ encaminha chamadas para backend:8080 na rede Docker, preservando
 caminho/query. O navegador pode chamar /api/v1/players na mesma origem da interface.
 Esse hostname interno e as credenciais MySQL não são enviados ao navegador.
@@ -39,6 +44,12 @@ npm run dev
 ~~~
 
 Vite atende http://localhost:5173 e encaminha /api para http://localhost:8080.
+Usa bind 127.0.0.1 e `strictPort: true` para detectar a porta publicada pelo
+Docker, inclusive quando localhost resolve para IPv6. Se o frontend Docker já
+estiver rodando, `npm run dev` falha claramente: não muda para 5174. Para escolher
+intencionalmente o modo Vite, pare somente `frontend` com `docker compose stop
+frontend` na raiz; preserve db/backend. Ao terminar, use Ctrl+C e volte ao
+comando Docker documentado. Não mantenha as duas versões em execução.
 Inicie o backend separadamente para chamadas à API. Pare o servidor com Ctrl+C.
 Para conferir o código e gerar assets:
 
@@ -71,15 +82,25 @@ PASSE_TEST_REAL_API=1 npm run test:browser
 No PowerShell, defina `$env:PASSE_TEST_REAL_API='1'` antes do comando.
 O teste compara a tela ao estado atual do banco, sem inserir ou apagar registros.
 
-npm run preview permite conferir assets em http://localhost:4173, sem o proxy
-de desenvolvimento; para testar a comunicação integrada, use Docker ou npm run dev.
+`npm run preview` usa a mesma porta 5173, bind e proxy da API; requer build
+prévio e a porta livre. É uma alternativa local, não um servidor adicional.
+Para validar a execução oficial já iniciada pelo README, com Chrome instalado:
+
+~~~sh
+npm run test:official
+~~~
+
+O teste acessa exclusivamente http://localhost:5173, exige Nginx/build estático,
+verifica rotas reais, API/proxy, F5, navegação/Voltar/Avançar, estados controlados
+somente no navegador e 375 px. Não inicia Vite, não altera registros e compara
+os dados da API antes/depois. Evidências em docs/evidencias/url-oficial, locais.
 
 ## Variáveis, estrutura e bibliotecas
 
 Não há variáveis VITE_* necessárias. Nunca coloque senhas nessas variáveis:
 seu conteúdo é público no navegador. .env.example explica essa restrição.
 src/main.tsx inicializa React; src/app/App.tsx configura o BrowserRouter;
-src/app/router.tsx configura início, jogadores, clubes e destinos ainda pendentes;
+src/app/router.tsx configura início, jogadores, clubes, partidas e classificação;
 src/app/layouts/MainLayout.tsx fornece o contêiner da aplicação;
 src/features/home separa página, componentes, hook, serviço, tipos e testes;
 src/features/players organiza a experiência de jogadores na mesma estrutura;
@@ -161,9 +182,9 @@ transfers, lineups, matches e standings. Serão criadas apenas pastas com códig
 em uso. Serviços de cada funcionalidade usarão src/lib/api.ts; hooks controlarão
 carregamento, erros e atualização dos dados. Componentes React não chamarão
 Fetch diretamente. Iniciar vai para /players; Compra abre /players?free=true.
-Venda direciona a /clubs?action=sell; Histórico e Liga direcionam à escolha de
-clube com tab=history ou tab=lineup. A escolha pela tabela ou sidebar preserva
-a aba solicitada. Partidas e Classificação mantêm suas rotas como pendentes.
+Venda direciona a /clubs?action=sell; Histórico direciona à escolha de clube
+com tab=history. A escolha pela tabela ou sidebar preserva a aba solicitada.
+Liga abre /matches, com acesso a partidas, seus duelos e classificação pelo menu.
 Venda, Histórico e Escalação ficam nas abas de `/clubs/:id`.
 
 ## Jogadores
@@ -318,16 +339,16 @@ real. Capturas/resultados em `docs/evidencias/transfers/`, exclusivamente locais
 independentemente da página inicial. O detalhe aceita `tab=squad`, `tab=lineup`
 ou `tab=history`. Na lista de clubes, `tab=history`/`tab=lineup` orientam a
 escolha do clube e são preservados ao ordenar ou usar a sidebar. O atalho Venda
-orienta a escolha do clube e a ação Vender no Elenco. Liga leva à escalação
-implementada; sua descrição identifica Partidas/Classificação como pendentes.
+orienta a escolha do clube e a ação Vender no Elenco. Liga leva a Partidas;
+a Escalação continua disponível na página do clube e por `/clubs?tab=lineup`.
 
 `/players?buy=ID` abre a compra; `/clubs?create=true` abre o cadastro. Esses
 estados acompanham a URL em entrada direta, F5 e Voltar/Avançar. A compra pelo
 botão também registra buy na URL, mantendo filtros existentes. Mudanças de aba
 evitam registrar a mesma navegação duas vezes por eventos de foco/ativação.
 `/transfers/buy?player_id=ID` permanece como redirecionamento de compatibilidade.
-`/matches` e `/standings` têm aviso de funcionalidade pendente; caminhos não
-cadastrados mostram Página não encontrada. Não há implementação fictícia da liga.
+`/matches`, `/matches/:id` e `/standings` usam o layout compartilhado e dados da
+API. Caminhos não cadastrados mostram Página não encontrada.
 
 Na pasta frontend, com Chrome instalado e porta 15178 livre:
 
@@ -349,13 +370,60 @@ containers nem altera o banco. Capturas/resultados ficam exclusivamente locais
 em `docs/evidencias/navigation/`. O build não atualiza sozinho uma imagem Docker
 já em execução: ela precisa ser reconstruída para receber o código atual.
 
+## Histórico de transações, Partidas e Classificação
+
+H01–H05 são estados da aba Histórico do clube. Filtros `type` e `player_id`
+ficam na URL e acompanham Voltar/Avançar/F5; opções de jogadores vêm do histórico
+completo, incluindo os nomes gravados nas transações. Filtros continuam visíveis
+na falha; uma recusa exibe `message`, sem tabela ou totais antigos. Limpar filtros
+preserva a aba. O `summary` e o CSV usam os mesmos filtros; nenhum total é
+recalculado. Histórico vazio mostra os totais da resposta e permite baixar CSV.
+
+L01–L04 compõem `/matches`, o diálogo `/matches?create=true` e `/matches/:id`.
+O filtro `club_id` acompanha a URL. A última partida corresponde ao primeiro
+resultado da lista recebida, inclusive no filtro por clube. O formulário exige
+mandante e visitante distintos; escalação incompleta é avaliada pela API.
+POST `/matches` envia somente os dois ids e bloqueia envio duplicado. Recusas
+preservam as seleções; sucesso atualiza o resumo do menu e navega para o detalhe,
+que consulta GET `/matches/{id}`. Placar, formações, condições, atributos, valores
+e os seis duelos são exclusivamente os da resposta. O campo agrupa os jogadores
+dos snapshots dos duelos, sem consultar o elenco/escalação atuais nem aplicar
+novamente o desconto por condição.
+
+L05 corresponde a `/standings`. Posição, números e ordem são preservados de
+GET `/standings`, incluindo clubes sem partidas. Últimas partidas usam GET
+`/matches` e abrem seus detalhes. Cada lista possui loading/skeleton, vazio,
+erro e retry. Tabelas têm rolagem local; em celulares, os dois times do campo
+ficam um abaixo do outro para manter nomes e valores legíveis.
+
+Teste de navegador com Chrome instalado e porta 15179 livre, em `frontend/`:
+
+~~~sh
+npm run test:league
+~~~
+
+O teste usa fixtures somente no navegador de teste: filtros, totais, download
+CSV, estados, criação/recusa de partida, envio único, snapshots, classificação,
+URLs/F5/Voltar/Avançar e larguras 360/375/390/768/1366. Não grava dados reais.
+Para acrescentar consultas à API já disponível em localhost:8080:
+
+~~~sh
+PASSE_LEAGUE_REAL_API=1 npm run test:league
+~~~
+
+No PowerShell: `$env:PASSE_LEAGUE_REAL_API='1'` e `npm run test:league`.
+O proxy usa a origem CORS localhost:5173; o trecho real permite apenas GET,
+compara classificação e bytes do CSV e não inicia containers. Sem partidas
+existentes, detalhes/criação ficam validados com fixtures, não com escrita real.
+`npm test` também cobre os filtros do histórico e o formulário de partida.
+Capturas e resultados ficam em `docs/evidencias/league/`, exclusivamente locais.
+
 ## Funcionalidades não implementadas
 
-Telas de partidas/classificação e formatador. Os padrões E07
-foram reutilizados nas listas de Clubes, elenco e histórico; as telas de partidas
-e classificação ainda precisam ser implementadas com esses estados. Tabelas
-largas do clube usam rolagem local; a responsividade é conferida pelo teste de
-navegador, sem garantir pontuação ou cobrir o roteiro sigiloso da banca.
+Não há formatador configurado. Os módulos obrigatórios têm interface e estados
+de lista; a implementação não significa aprovação ou cobertura do roteiro
+sigiloso. A execução completa em VM Ubuntu limpa e a fidelidade pixel a pixel
+não foram certificadas.
 
 ## Uso de inteligência artificial
 
@@ -402,3 +470,8 @@ ajustes pontuais nos links e no estado derivado da URL, mantendo Home/layouts;
 redirecionar a Home ou reestruturar a aplicação foi descartado. Rotas diretas,
 F5, menu e Voltar/Avançar foram cobertos por teste de navegador, com leituras
 reais da API e nenhuma escrita no banco. Registros detalhados permanecem locais.
+Na etapa Histórico/Partidas/Classificação, Codex abriu as dez referências H/L,
+conferiu Controllers/DTOs e compôs os módulos com shadcn e componentes existentes.
+Filtros persistentes e estados de erro foram ajustados no Histórico; novos
+detalhes usam os snapshots da API. Cálculos locais de placar/classificação foram
+descartados. Não houve instalação de bibliotecas ou alteração de backend/Docker.

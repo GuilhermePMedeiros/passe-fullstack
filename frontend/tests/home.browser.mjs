@@ -84,7 +84,7 @@ try {
   await page.getByRole('link', { name: 'Voltar ao início' }).click()
   await page.getByRole('heading', { name: 'Gestão da liga, do mercado à classificação' }).waitFor()
   
-  const destinations = ['/players', '/clubs', '/players?free=true', '/clubs?action=sell', '/clubs?tab=history', '/clubs?tab=lineup']
+  const destinations = ['/players', '/clubs', '/players?free=true', '/clubs?action=sell', '/clubs?tab=history', '/matches']
   
   for (let index = 0; index < destinations.length; index++) {
     const link = page.getByRole('navigation').getByRole('link').nth(index)

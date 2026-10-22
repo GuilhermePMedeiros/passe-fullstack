@@ -15,6 +15,7 @@ export function AppHeader({ onMenu }: { onMenu: () => void }) {
   const { refresh, data } = useWorkspace()
   const location = useLocation()
   const clubId = location.pathname.match(/^\/clubs\/([^/]+)$/u)?.[1]
+  const matchId = location.pathname.match(/^\/matches\/([^/]+)$/u)?.[1]
   const clubName = data?.clubs.find(club => String(club.id) === clubId)?.name ?? `Clube ${clubId}`
   const section = SECTION_TITLES[location.pathname.split('/')[1]] ?? 'Gestão da liga'
 
@@ -30,8 +31,8 @@ export function AppHeader({ onMenu }: { onMenu: () => void }) {
       </Button>
       <Separator orientation="vertical" className="header-separator" />
       <nav aria-label="Caminho da página" className="breadcrumbs">
-        <Link to="/">Mercado</Link><span aria-hidden="true">›</span>
-        {clubId ? <><Link to="/clubs">Clubes</Link><span aria-hidden="true">›</span><span aria-current="page">{clubName}</span></> : <span aria-current="page">{section}</span>}
+        <Link to="/">{location.pathname.startsWith('/matches') || location.pathname === '/standings' ? 'Liga' : 'Mercado'}</Link><span aria-hidden="true">›</span>
+        {clubId ? <><Link to="/clubs">Clubes</Link><span aria-hidden="true">›</span><span aria-current="page">{clubName}</span></> : matchId ? <><Link to="/matches">Partidas</Link><span aria-hidden="true">›</span><span aria-current="page">Partida {matchId}</span></> : <span aria-current="page">{section}</span>}
       </nav>
       <Button variant="ghost" size="icon" onClick={refreshPage} aria-label="Atualizar dados">
         <RefreshCw aria-hidden="true" />
