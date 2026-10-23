@@ -1,353 +1,206 @@
 # Passe
 
-O Passe é uma aplicação fullstack com Spring Boot, React e MySQL. Docker Compose
-constrói e inicia os serviços integrados sem instalar Java, Maven, Node.js ou MySQL
-no computador. O backend implementa jogadores, clubes, mercado, contratos, histórico
-financeiro/CSV, escalações, partidas e classificação. A interface React possui
-a tela inicial com resumo real da liga, Jogadores, Clubes, compra/venda,
-histórico de transações/CSV, escalações, partidas com seis duelos e classificação,
-integrados à API.
+Aplicação fullstack para administrar uma liga fictícia de futebol: jogadores,
+clubes, compra e venda com fidelidade, histórico financeiro/CSV, escalações,
+partidas com seis duelos e classificação. Não há login; a interface administra
+os clubes da liga e consome os cálculos da API.
 
-### Funcionalidades implementadas no backend
+## Pré-requisitos e tecnologias
 
-- Jogadores: cadastro, consulta, edição, condição, exclusão lógica, filtros,
-  ordenação e paginação; cálculo de overall e valor de mercado.
-- Clubes: criação, listagem, elenco, caixa, valor do elenco e patrimônio.
-- Mercado: compra e venda, fidelidade contratual, taxas, multas e comissões;
-  histórico financeiro com totais filtrados e exportação CSV.
-- Liga: escalações, partidas com seis duelos, histórico e classificação.
-- Operação: transações atômicas, respostas de erro JSON, logs por requisição
-  e testes automatizados com banco isolado.
+Caminho principal: Ubuntu 24.04 LTS (amd64), Git, Docker Engine com Docker Compose
+v2.20 ou superior, containers Linux e acesso à internet. Docker deve estar em
+execução e utilizável sem `sudo`. Reserve as portas 5173, 8080 e 3307;
+os testes Java usam também 13308. Referência de recursos da banca: 4 vCPUs,
+8 GB de RAM e 40 GB livres.
 
-## 1. Tecnologias e pré-requisitos
-
-Docker Engine ou Docker Desktop com containers Linux e Docker Compose **v2.20+**,
-em execução. Internet para imagens/dependências. Portas locais **5173**, **8080**
-e **3307** livres; testes locais usam também **13308**.
-Git é necessário somente para clonar o repositório.
-
-| Componente | Versão |
-|---|---|
+| Componente | Versão utilizada |
+| --- | --- |
 | Backend | Java 21, Spring Boot 3.5.16, Maven 3.10.0 |
-| Frontend | React 19.3.1, TypeScript 5.8.3, Vite 6.4.4, Node.js 22.14.0 no build |
+| Frontend | React 19.3.1, TypeScript 5.8.3, Vite 6.4.4 |
+| Build frontend | Node.js 22.14.0 com npm |
 | Banco | MySQL 8.0.46 |
-| Servidor estático | Nginx 1.28 Alpine |
+| Servidor frontend | Nginx 1.28 Alpine |
 
-Containers Linux exercitados com Docker Desktop/WSL2 em Windows. O build e os testes
-Java usam Ubuntu 24.04 Noble dentro do container. Não houve ensaio em instalação
-limpa de Ubuntu, em macOS ou em Linux ARM64. O tempo inicial depende da rede e dos
-recursos disponíveis; os scripts não exigem ferramentas específicas do host.
+Java, Maven, Node.js e MySQL são fornecidos pelas imagens públicas; não precisam
+ser instalados no host para a execução Docker. O npm usa o `package-lock.json`
+versionado; as versões Java são gerenciadas pelo `pom.xml` e pelo Maven Wrapper.
 
-## 2. Instalação rápida
+## Instalação e execução do zero
 
-Clone o repositório e entre na pasta:
+No terminal Ubuntu:
 
-~~~sh
-git clone https://github.com/GuilhermePMedeiros/passe-fullstack.git
+```sh
+git clone --branch main https://github.com/GuilhermePMedeiros/passe-fullstack.git
 cd passe-fullstack
-~~~
-
-A implementação descrita está na branch `dev`. Após clonar:
-
-~~~sh
-git switch dev
-~~~
-
-Na raiz `passe-fullstack`, inicie todos os serviços:
-
-~~~sh
-docker compose up --build -d
-~~~
-
-A URL oficial é **http://localhost:5173/** para a Home e todos os módulos.
-Use o mesmo comando após mudanças no código: o Nginx serve o build da imagem,
-não os arquivos locais ao vivo. `docker compose restart` sozinho não incorpora
-alterações do frontend. Não abra outro Vite em 5174 para acessar uma versão diferente.
-
-Não é necessário criar ou editar .env. Os padrões locais já estão configurados.
-As imagens são construídas com este código e imagens públicas de terceiros.
-O MySQL inicializa antes da API; o frontend aguarda a API responder. Para aguardar
-a conclusão dos healthchecks e conferir os serviços:
-
-~~~sh
-docker compose up -d --wait --wait-timeout 300
+docker compose up --build -d --wait --wait-timeout 300
 docker compose ps
-~~~
+```
 
-| Serviço | Endereço |
-|---|---|
-| Interface | http://localhost:5173 |
-| Origem da API | http://localhost:8080 |
-| API direta | http://localhost:8080/api/v1/players |
-| API pelo proxy da interface | http://localhost:5173/api/v1/players |
-| MySQL para ferramentas locais | localhost:3307, banco passedb |
+O comando constrói a interface e a API a partir deste repositório e inicia o
+MySQL antes delas. Não é necessário criar `.env`: os padrões locais funcionam
+sem edição. O banco novo começa vazio; não existe carga automática de exemplos.
 
-Não há Swagger/OpenAPI disponível. Os 19 endpoints e seus contratos estão
-documentados no [README do backend](backend/README.md#4-endpoints).
+| Acesso | URL |
+| --- | --- |
+| Interface e página inicial | http://localhost:5173/ |
+| Origem da API para avaliação | http://localhost:8080 |
+| Consulta da API | http://localhost:8080/api/v1/players |
+| Mesma consulta pelo proxy | http://localhost:5173/api/v1/players |
+| MySQL local | localhost:3307, banco `passedb` |
 
-O navegador pode usar caminhos relativos /api/v1/.... O Nginx encaminha /api/ para
-backend:8080 na rede Docker, preservando caminho e query string. Esse hostname
-interno não é utilizado pelo navegador. A tela inicial consulta totais de
-jogadores, livres, clubes e partidas e mostra o líder da classificação quando
-há partidas. Navegação, testes e limites estão no [README do frontend](frontend/README.md).
+Os três serviços devem aparecer como `healthy`. Confira o proxy sem instalar
+um cliente HTTP no host:
 
-### Validação de instalação
+```sh
+docker compose exec -T frontend wget -q -O - http://127.0.0.1/api/v1/players
+```
 
-Em 21/10/2026, um ensaio em Windows com Docker Desktop/WSL2, utilizando um daemon
-Linux AMD64 isolado, partiu sem imagens Docker e com cache de build de **0 B**.
-Os três serviços ficaram saudáveis em **4 minutos e 7 segundos**. Foram verificadas
-as sete tabelas, a disponibilidade da API, o proxy e os arquivos JavaScript/CSS do
-frontend. A suíte executou **484 testes, sem falhas, erros ou testes ignorados**.
-O tempo da suíte é separado do tempo de instalação.
+Em banco vazio, a resposta contém `data: []` e `meta.total_items: 0`. Abra a
+interface e percorra Jogadores → Clubes → Compra → Venda → Histórico → Liga.
+A compra parte dos jogadores livres; venda, histórico e escalação ficam no clube.
+O Nginx atende rotas diretas e F5 e encaminha `/api/` à API.
 
-A medição não inclui a instalação do Docker nem a preparação do daemon de ensaio.
-Foram utilizados Docker 29.8.2 e Compose 5.6.0. O tempo varia com hardware, conexão
-e ambiente; esse resultado não representa medição em Ubuntu 24.04 instalado no
-host nem certificação de compatibilidade com todas as plataformas. A inicialização
-dos serviços não comprova a conclusão das telas de negócio do frontend.
+Após mudanças no código, repita o comando com `--build`: reiniciar o container
+não atualiza o build. Vite local é uma alternativa de desenvolvimento na mesma
+porta 5173, descrita no [README do frontend](frontend/README.md).
 
-## 3. Criação do banco e persistência
+## Banco de dados: criação, persistência e recriação
 
-Na primeira instalação, a imagem MySQL cria passedb e o usuário da aplicação.
-backend/scripts/docker-init.sh aplica 000-core-schema.sql e
-002-entidades-restantes.sql. São criadas sete tabelas vazias: jogadores, clubes,
-contratos, transacoes, escalacoes, partidas e duelos_partida, com suas restrições.
-Não há carga automática de exemplos. O banco de infraestrutura legado passedb_test
-também é criado, mas as suítes usam um servidor de testes separado.
+Na primeira inicialização do volume, `backend/scripts/docker-init.sh` aplica
+`000-core-schema.sql` e `002-entidades-restantes.sql`. São criadas sete tabelas:
+`jogadores`, `clubes`, `contratos`, `transacoes`, `escalacoes`, `partidas` e
+`duelos_partida`. O bootstrap também prepara o schema auxiliar `passedb_test`;
+a suíte utiliza outro servidor MySQL, separado.
 
-O volume nomeado mysql_data preserva os registros. Os scripts iniciais rodam somente
-quando o volume está vazio. Hibernate usa ddl-auto=none e o Spring não executa
-inicialização SQL adicional. Iniciar/encerrar a API não limpa registros. CREATE
-TABLE IF NOT EXISTS não converte estruturas legadas divergentes: inspecione os dados
-antes de aplicar uma migração. Detalhes em [scripts](backend/scripts/README.md).
+O volume `mysql_data` preserva os dados. Hibernate usa `ddl-auto=none`; iniciar a
+API não cria nem migra tabelas. Os scripts iniciais só rodam em volume vazio e
+não corrigem automaticamente estruturas antigas.
 
-## 4. Reiniciar e encerrar
+Para uma avaliação limpa, **somente no ambiente de avaliação cujos registros
+podem ser descartados**, execute na raiz:
 
-Todos os comandos desta seção são executados na raiz. Para parar sem apagar dados:
-
-~~~sh
-docker compose stop
-~~~
-
-Para iniciar novamente e aguardar a disponibilidade:
-
-~~~sh
-docker compose up -d --wait --wait-timeout 300
-~~~
-
-Para reiniciar os containers existentes:
-
-~~~sh
-docker compose restart
-~~~
-
-Para encerrar e iniciar posteriormente, preservando o volume:
-
-~~~sh
-docker compose down
-docker compose up -d --wait --wait-timeout 300
-~~~
-
-Para conferir status e logs:
-
-~~~sh
-docker compose ps
-docker compose logs --tail 100 db backend frontend
-~~~
-
-`stop`, `restart` e `down` sem `-v` preservam o volume. **Não use down -v para reiniciar**:
-essa opção remove volumes e apaga os bancos correspondentes.
-
-## 5. Testes isolados
-
-Na raiz:
-
-~~~sh
-docker compose --profile tools build tests
-docker compose --profile tools up -d --wait --wait-timeout 180 tests-db
-docker compose --profile tools run --rm tests
-~~~
-
-O comando termina sozinho e propaga falhas. Inclui cálculos, validações HTTP,
-persistência, concorrência, contratos e partidas. tests-db é outro servidor MySQL,
-com schema passedb_test e credenciais próprias. O helper das integrações de escrita
-usa somente TEST_DB_* e recusa outro schema. Fixtures têm rollback ou limpeza dos
-IDs próprios. Não execute suítes simultaneamente no mesmo servidor de testes.
-Relatórios são gerados em docs/evidencias/mysql, ignorados pelo Git.
-No ensaio de instalação descrito acima, `docker compose --profile tools run --rm tests`
-concluiu os 484 testes com sucesso. Esse total é o resultado daquela versão;
-não é um número fixado na configuração da suíte.
-
-Para recriar somente o banco de testes, pare as suítes e execute:
-
-~~~sh
-docker compose --profile tools stop tests-db
-docker compose --profile tools up -d --wait --wait-timeout 180 tests-db
-~~~
-
-tests-db usa tmpfs: parar esse serviço descarta apenas seus dados. O próximo início
-executa docker-test-init.sh e recria sete tabelas vazias. O banco normal permanece intacto.
-
-## 6. Recriação intencional do banco
-
-**Operação destrutiva, separada do uso normal:** apaga os registros de passedb no
-serviço db e recria as sete tabelas vazias. Use somente quando quiser descartar
-esses registros. Na raiz, com db em execução:
-
-~~~sh
+```sh
 docker compose stop backend
 docker compose exec -T db bash /opt/passe-sql/recreate-database.sh --confirm-reset-passedb
 docker compose up -d --wait --wait-timeout 300 backend
-~~~
+```
 
-O script exige a confirmação literal; nunca é chamado automaticamente. Não remove
-volumes, não altera o MySQL instalado no host e não recria tests-db.
+Isso apaga `passedb` e recria suas sete tabelas vazias, sem remover volumes ou
+alterar `tests-db`. Não use esse procedimento em uma base que deseja preservar.
 
-## 7. Variáveis de ambiente
+## Variáveis de ambiente
 
-.env.example contém somente valores locais fictícios. O Compose funciona sem esse
-arquivo. Para personalizar, copie-o para .env antes de criar o volume. Nunca publique
-credenciais reais. Alterar variáveis não muda usuários já existentes no MySQL.
-Spring não carrega .env automaticamente fora do Compose.
+Os exemplos [.env.example](.env.example) e [backend/.env.example](backend/.env.example)
+contêm valores fictícios para execução local. Opcionalmente, copie o primeiro
+para `.env` antes da primeira inicialização. Alterar senhas no arquivo não muda
+usuários de um volume já inicializado. Não publique credenciais reais.
 
-| Variável | Padrão / uso |
-|---|---|
-| MYSQL_ROOT_PASSWORD | passe_root_local, administração do container db |
-| DB_USERNAME / DB_PASSWORD | passe_app / passe_app_local |
-| TEST_DB_USERNAME / TEST_DB_PASSWORD | passe_test / passe_test_local, somente schema de testes |
-| MYSQL_PORT | 3307, MySQL no loopback do host |
-| BACKEND_PORT / FRONTEND_PORT | 8080 / 5173, portas HTTP locais |
-| TEST_MYSQL_PORT | 13308, acesso local ao servidor de testes |
-| DB_URL | Docker: jdbc:mysql://db:3306/passedb; Java local: jdbc:mysql://localhost:3307/passedb |
-| TEST_DB_URL | Docker: jdbc:mysql://tests-db:3306/passedb_test; Java local: jdbc:mysql://localhost:13308/passedb_test |
-| CORS_ORIGIN | http://localhost:5173, origem permitida pelo backend |
+| Variável | Padrão e finalidade |
+| --- | --- |
+| `MYSQL_ROOT_PASSWORD` | Senha administrativa local definida no exemplo |
+| `DB_USERNAME` / `DB_PASSWORD` | Usuário/senha locais da aplicação, definidos no exemplo |
+| `TEST_DB_USERNAME` / `TEST_DB_PASSWORD` | Usuário/senha exclusivos dos testes, definidos no exemplo |
+| `MYSQL_PORT` | 3307, porta do MySQL no host |
+| `BACKEND_PORT` / `FRONTEND_PORT` | 8080 / 5173, portas HTTP no host |
+| `TEST_MYSQL_PORT` | 13308, porta do MySQL de testes no host |
+| `CORS_ORIGIN` | `http://localhost:5173`, única origem liberada pela API |
+| `DB_URL` | Java local: `jdbc:mysql://localhost:3307/passedb` |
+| `TEST_DB_URL` | Java local: `jdbc:mysql://localhost:13308/passedb_test` |
 
-DB_URL e TEST_DB_URL são fixados nos serviços do Compose; variáveis externas com
-esses nomes destinam-se ao Java local. Ao mudar a porta da interface, ajuste também
-CORS_ORIGIN. O frontend não recebe senhas. Serviços comunicam-se pela rede privada
-do projeto Compose. Portas publicadas escutam somente em 127.0.0.1. O acesso local
-ao MySQL foi mantido para IDEs e ferramentas de desenvolvimento.
+No Compose, `DB_URL` e `TEST_DB_URL` são fixadas para `db:3306/passedb` e
+`tests-db:3306/passedb_test`, respectivamente; valores externos dessas duas
+variáveis não substituem os endereços Docker. Spring não lê `.env` automaticamente
+na execução Java local. O frontend não utiliza variáveis de ambiente: chama
+`/api/v1` por proxy e não recebe credenciais do banco.
 
-## 8. Desenvolvimento local, pastas e bibliotecas
+## Testes e verificações
 
-Para Java local: Java 21 e Maven Wrapper 3.10.0. Suba db na raiz com
-os comandos do [README do backend](backend/README.md#1-pré-requisitos-e-execução).
-Eles descrevem a execução por Maven Wrapper, o perfil de testes e as portas usadas.
+Testes Java, na raiz, com MySQL isolado:
 
-Para React local: Node.js 22.14.0 com npm. Veja [frontend/README.md](frontend/README.md).
-O Vite também encaminha /api para a API local.
+```sh
+docker compose --profile tools build tests
+docker compose --profile tools up -d --wait --wait-timeout 180 tests-db
+docker compose --profile tools run --rm tests
+```
 
-Docker/Nginx é o modo integrado documentado. Vite local é uma alternativa de
-desenvolvimento na mesma porta 5173; não execute os dois frontends simultaneamente.
-O Vite falha se a porta estiver ocupada. Para trocar intencionalmente para Vite,
-pare somente o frontend identificado com `docker compose stop frontend`,
-mantendo banco e API, e siga o README do frontend. Para voltar ao modo integrado,
-encerre esse Vite com Ctrl+C e execute `docker compose up --build -d` na raiz.
+O último comando executa `mvn -B -ntp verify` e termina sozinho. A suíte inclui
+valor de mercado, validações HTTP, persistência, mercado, contratos, CSV,
+escalação, partidas e classificação. Não execute duas suítes no mesmo banco.
+`tests-db` usa tmpfs; parar esse serviço descarta apenas os dados de testes.
+Relatórios locais: `docs/evidencias/mysql/`, ignorados pelo Git.
 
-- backend/: API Java e domínios player, club, contract, transaction, market, lineup e match.
-- frontend/: React/TypeScript/Vite e Nginx.
-- compose.yaml: serviços integrados e perfil de testes tools.
-- compose.backend-audit.yaml: validação separada do backend, com volume próprio.
+Testes de componente, lint, build e verificação no navegador estão no
+[README do frontend](frontend/README.md#testes-lint-e-build). Logs por requisição
+podem ser conferidos após a consulta de disponibilidade:
 
-Spring Web atende HTTP; Jackson serializa JSON; Spring Data JPA/Hibernate tratam
-persistência/transações; Validation fornece constraints; Connector/J conecta ao MySQL;
-SLF4J/Logback registra requisições; Spring Boot Test fornece JUnit, Mockito, AssertJ
-e MockMvc. React/React DOM renderizam a interface; Vite e plugin React constroem
-assets; TypeScript verifica tipos; ESLint, typescript-eslint, globals e plugins React
-verificam convenções/hooks. Nginx serve assets e proxy. Versões Java são gerenciadas
-pelo POM e versões npm pelo package-lock.json. Documentação adicional:
+```sh
+docker compose logs --tail 100 backend
+```
 
-- [Backend: execução, arquitetura e contratos da API](backend/README.md).
-- [Frontend: Docker, desenvolvimento local e limitações](frontend/README.md).
-- [Scripts de criação e recriação do banco](backend/scripts/README.md).
+Cada requisição é registrada por SLF4J/Logback com data, hora, método, caminho e
+status. As suítes próprias não substituem o roteiro de avaliação da banca.
 
-## 9. Solução de problemas
+## Encerrar, retomar e diagnosticar
 
-~~~sh
+Na raiz, para encerrar preservando os dados:
+
+```sh
+docker compose --profile tools down
+```
+
+Para retomar a aplicação:
+
+```sh
+docker compose up -d --wait --wait-timeout 300
+```
+
+Não acrescente `-v` ao encerramento: essa opção remove volumes. Para diagnóstico:
+
+```sh
+docker compose config --quiet
 docker compose ps
 docker compose logs --tail 100 db backend frontend
-docker compose config --quiet
-~~~
+```
 
-Porta ocupada: identifique o processo e escolha um dos modos de execução descritos.
-Antes de parar algo, identifique o processo e o projeto. Para a execução oficial,
-mantenha a porta 5173: não contorne conflito com outro servidor/porta. Se aparecer
-uma versão antiga, execute `docker compose up --build -d` e confira a interface
-em 5173. Para validar Home, módulos, URLs diretas/F5, menu, Voltar/Avançar e 375 px
-no Nginx já em execução, rode `npm run test:official` em `frontend/` com Chrome
-e as dependências npm instaladas. O teste não inicia servidor nem grava na API.
-Erro de download: confira a conexão e repita o build. Autenticação após mudar .env:
-os usuários do volume mantêm as credenciais originais; não apague dados para corrigir
-configuração. Schema legado: inspecione antes de alterar. A raiz / da API retorna
-404; use /api/v1/players. Não há endpoint em /api/v1 sem recurso.
+Em conflito de porta, identifique o processo antes de encerrá-lo. Use um único
+frontend em 5173. A raiz `/` da API retorna 404; consulte `/api/v1/players`.
 
-## 10. Decisões e premissas
+## Estrutura e bibliotecas
 
-Controllers mantêm try/catch explícito; BaseController padroniza respostas.
-Recusas usam 400/404/409 com message; falhas inesperadas retornam 500 sanitizado.
-Não há autenticação. Dinheiro usa BigDecimal/HALF_UP e cálculos únicos. Valores
-dinâmicos são calculados nas consultas; contratos, transações e duelos guardam
-snapshots. Operações de compra, venda, escalação, partida e condição DOENTE são atômicas.
+- `backend/`: API, domínios, testes e scripts SQL. [Detalhes e contratos](backend/README.md).
+- `frontend/`: aplicação React por funcionalidade, componentes e testes. [Execução e bibliotecas](frontend/README.md).
+- `compose.yaml`: aplicação integrada e perfil de testes `tools`.
 
-Datas usam Brasília (-03:00), inclusive sessão JDBC. Fidelidade entra em minutos e
-sai com segundos. Tabelas novas usam TIMESTAMP; DATETIME legado não é convertido
-automaticamente. Nomes usam Unicode NFD sem Mn, caixa ignorada, pontos de código e
-id. Lineup mantém LineupId próprio. Vínculos legados não geram contratos fictícios;
-venda inconsistente retorna 409. Bloqueios seguem jogador antes de clube e IDs crescentes.
+As bibliotecas e a finalidade de cada uma estão nos READMEs específicos.
 
-Imagens de build/runtime são separadas e o backend executa sem privilégios.
-Healthchecks verificam tabelas no MySQL, GET /api/v1/players com 200 no backend e
-HTTP no Nginx. Não substituem testes de todas as funcionalidades. O proxy resolve
-backend pelo DNS interno Docker, inclusive após troca de IP.
+## Decisões e premissas
 
-## 11. Funcionalidades não implementadas
+Mensagens de erro são em português. Controllers usam `try/catch` explícito e
+respostas comuns em `BaseController`; detalhes de falhas internas são sanitizados.
+Compra, venda, escalação, partida e retirada de titular por doença têm transações
+no banco. Valores financeiros usam `BigDecimal` com `HALF_UP`; datas usam Brasília
+(`-03:00`). Contratos, transações e duelos preservam os valores do momento.
 
-As telas obrigatórias do fluxo estão implementadas no frontend; isso não
-representa certificação do roteiro sigiloso da banca.
-Clubes possui lista/cadastro, detalhes, elenco/contratos, venda, histórico/CSV e escalação.
-Jogadores possui listagem, filtros, cadastro, edição, condição, detalhes e
-exclusão lógica. A compra está integrada à lista, menu e detalhes dos jogadores livres.
-A tela inicial e Jogadores possuem testes de componente e de navegador.
-Clubes também possui testes de formulário, escalação e navegador com API QA isolada.
-Não há formatador, Swagger/OpenAPI ou comandos de lint/formatação do backend. Testes Java
-e logs por requisição estão implementados. A instalação dos containers não significa
-que todos os cenários da interface tenham sido validados na VM da banca.
+A interface usa React Router no modo biblioteca, componentes shadcn/ui e estados
+na URL para filtros/abas aplicáveis. Cálculos e ordenações devolvidos pela API são
+preservados; a soma de valor e taxa exibe o custo total da compra. Decisões
+específicas das camadas estão nos respectivos READMEs.
 
-## 12. Uso de inteligência artificial
+## Funcionalidades não implementadas
 
-OpenAI Codex apoiou análise de requisitos/código, implementação e auditoria dos
-domínios Java, testes, scripts SQL, Docker/Compose, proxy e documentação. A finalidade
-foi conferir contratos, investigar falhas e reduzir configuração manual. Foram aceitos
-Java 21/Spring Boot 3/MySQL real, DTOs, cálculos únicos, transações e testes isolados.
-Foram ajustados erros HTTP, Unicode, fuso, bootstrap, persistência e configuração
-do frontend. Foram descartados Boot 4, H2 na aplicação, abstrações adicionais para
-LineupId e tratamento automático de exceções nos controllers. O template React foi
-reduzido à estrutura inicial; telas de negócio não foram criadas nesta etapa.
-Na revisão dos READMEs, foram conferidos o código e os registros de instalação
-e testes; apenas a documentação foi alterada, sem repetir a instalação ou o reset.
-Relatórios gerados por IA permanecem locais. Resultados declarados dependem de
-execuções reais; a revisão das alterações cabe aos mantenedores.
-Depois da preparação inicial, Codex apoiou a tela inicial W01/W02, componentes,
-tema, integração com a API, rotas e testes de interface. Foram aceitas as imagens
-como referência, dados reais no aplicativo e cenários controlados apenas nos testes.
-Não foram criadas as demais telas de negócio. Consulte o README do frontend.
-Na etapa seguinte, Codex apoiou a feature Jogadores a partir dos 19 estados
-visuais, respeitando os contratos da API e mantendo as fórmulas no backend.
-Escopo, testes reproduzíveis e limitações estão no README do frontend;
-evidências e relatórios gerados permanecem exclusivamente locais.
-Na refatoração visual de Jogadores, foram priorizadas as bases oficiais
-shadcn/ui e a composição conforme as referências, preservando os contratos da
-API. Dependências, testes e limitações estão documentados no README do frontend.
-Na feature Clubes, Codex apoiou as referências C01–C11/E04/E05/E07, implementação
-por composição das bases shadcn existentes, integração real e testes isolados.
-Fórmulas continuam na API; compra/partidas/classificação não foram ampliadas.
-Na etapa Negociações, Codex inspecionou M01–M08/V01–V05, integrou a compra
-à página de jogadores e adaptou a confirmação/resultado da venda existente.
-Foram aceitos componentes shadcn já instalados, valores da API e testes;
-estimativas de taxas/multas/caixa no frontend foram descartadas. Somente
-valor + taxa é somado para exibir o custo total, conforme permitido pela banca.
-Na etapa Histórico/Partidas/Classificação, Codex inspecionou H01–H05/L01–L05,
-ajustou os filtros do histórico e implementou as telas da liga. Foram aceitos
-componentes existentes e snapshots/ordenação da API; simular duelos ou recalcular
-classificação no frontend foi descartado. A integração local foi verificada
-por consultas GET, sem alterar dados; gravação de partidas usa fixtures nos testes.
+Os quatro módulos obrigatórios possuem implementação na API e na interface.
+Não há Swagger/OpenAPI, lint/formatação do backend ou formatador do frontend.
+A instalação completa em uma VM Ubuntu 24.04 limpa não foi certificada.
+
+## Uso de inteligência artificial
+
+OpenAI Codex auxiliou a análise dos requisitos, a implementação e a revisão de
+`backend/src/`, testes Java, scripts SQL, Docker/Compose, `frontend/src/`, testes
+de interface e documentação. O auxílio foi usado para conferir contratos,
+implementar os fluxos e investigar erros de integração, cálculo e configuração.
+
+Conforme o histórico documental do projeto, foram aceitos DTOs, cálculos
+centralizados na API, transações, testes com MySQL e componentes shadcn/ui.
+As sugestões foram adaptadas aos contratos HTTP, regras de Unicode, fuso de
+Brasília, referências visuais e navegação existente. Foram descartados Spring
+Boot 4, H2 como banco da aplicação e recálculo financeiro/classificação no frontend.
