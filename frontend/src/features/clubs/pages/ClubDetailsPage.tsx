@@ -103,6 +103,6 @@ export function ClubDetailsPage() {
 
   return <article className="clubs-page" aria-busy={state.status === 'loading'}>
     {renderContent()}
-    {sale && <ClubSaleDialog player={sale} onClose={closeSale} onSold={handleSold} />}
+    {sale && <ClubSaleDialog player={sale} clubName={workspace.data?.clubs.find(club => club.id === sale.club_id)?.name} onClose={closeSale} onSold={handleSold} />}
   </article>
 }

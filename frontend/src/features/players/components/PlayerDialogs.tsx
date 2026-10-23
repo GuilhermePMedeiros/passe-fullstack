@@ -9,7 +9,7 @@ import { getErrorMessage } from '@/lib/errors'
 import { formatMoney } from '@/lib/formatters'
 import { useWorkspace } from '@/components/layout/WorkspaceContext'
 import { getPlayer } from '../services/playerService'
-import type { Player, PlayerAction } from '../types/player.types'
+import { POSITIONS, type Player, type PlayerAction } from '../types/player.types'
 import { PlayerForm } from './PlayerForm'
 import { PlayerConditionDialog } from './PlayerConditionDialog'
 import { PlayerDeleteDialog } from './PlayerDeleteDialog'
@@ -71,7 +71,7 @@ export function PlayerDialogs({ dialog, onClose, onAction, onSaved, onDeleted }:
     if (error) return <ErrorState message={error} onRetry={() => setRevision(value => value + 1)} />
     if (!player) return <LoadingState label="Carregando jogador…" />
     if (dialog.kind === 'edit') return <PlayerForm player={player} onSaved={saved => onSaved(saved, false)} onCancel={onClose} onBusy={setBusy} />
-    if (dialog.kind === 'condition') return <PlayerConditionDialog player={player} onSaved={(saved, removed) => onSaved(saved, false, removed)} onCancel={onClose} onBusy={setBusy} />
+    if (dialog.kind === 'condition') return <PlayerConditionDialog player={player} clubName={data?.clubs.find(club => club.id === player.club_id)?.name} onSaved={(saved, removed) => onSaved(saved, false, removed)} onCancel={onClose} onBusy={setBusy} />
     if (dialog.kind === 'delete') return <PlayerDeleteDialog player={player} onDeleted={onDeleted} onCancel={onClose} onBusy={setBusy} />
     if (dialog.kind === 'details') return <PlayerDetailsDrawer player={player} clubs={data?.clubs ?? []} onAction={onAction} />
 
@@ -80,7 +80,7 @@ export function PlayerDialogs({ dialog, onClose, onAction, onSaved, onDeleted }:
         <dl className="player-facts">
           <div><dt>Valor base<small>Calculado no cadastro; não muda depois</small></dt><dd>{formatMoney(player.base_value)}</dd></div>
           <div><dt>Valor de mercado<small>Com condição, agilidade e idade</small></dt><dd>{formatMoney(player.market_value)}</dd></div>
-          <div><dt>Overall<small>Calculado pela posição</small></dt><dd>{player.overall}</dd></div>
+          <div><dt>Overall<small>Pelos pesos da posição {POSITIONS[player.position]}</small></dt><dd>{player.overall}</dd></div>
         </dl>
         <footer className="modal-actions">
           <Button variant="outline" onClick={() => onAction('details', player)}><Eye aria-hidden="true" /> Ver detalhes</Button>

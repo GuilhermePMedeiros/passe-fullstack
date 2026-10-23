@@ -13,13 +13,14 @@ import { CONDITIONS, type Player, type PlayerCondition } from '../types/player.t
 import { PlayerConditionBadge, PlayerIdentity } from './PlayerIdentity'
 
 interface PlayerConditionProps {
+  clubName?: string
   player: Player
   onSaved: (player: Player, removedFromLineup: boolean) => void
   onCancel: () => void
   onBusy: (busy: boolean) => void
 }
 
-export function PlayerConditionDialog({ player, onSaved, onCancel, onBusy }: PlayerConditionProps) {
+export function PlayerConditionDialog({ player, clubName, onSaved, onCancel, onBusy }: PlayerConditionProps) {
   const [condition, setCondition] = useState(player.condition)
   const [starter, setStarter] = useState<boolean | null>(player.club_id === null ? false : null)
   const [lineupError, setLineupError] = useState('')
@@ -77,7 +78,7 @@ export function PlayerConditionDialog({ player, onSaved, onCancel, onBusy }: Pla
         <Alert className="warning-notice" role="status">
           <TriangleAlert aria-hidden="true" />
           <AlertDescription>
-          {starter ? `${player.name} é titular. Ao passar para Doente, sai da escalação; o clube precisa escalar novamente para jogar.` : 'Se o jogador for titular, ao passar para Doente ele sai da escalação e o clube precisa escalar novamente.'}
+          {starter ? `${player.name} é titular. Ao passar para Doente, ele sai da escalação; ${clubName ?? 'o clube'} só volta a jogar partidas depois de escalar de novo os 5 titulares.` : 'Se o jogador for titular, ao passar para Doente ele sai da escalação e o clube precisa escalar novamente.'}
           </AlertDescription>
         </Alert>
       )}

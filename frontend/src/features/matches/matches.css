@@ -46,6 +46,44 @@
   margin-bottom: 0.5rem;
 }
 
+.match-table-club {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.match-table-home {
+  justify-content: flex-end;
+  font-weight: 600;
+}
+
+.match-table-away > div {
+  order: -1;
+}
+
+.match-table-club > div {
+  padding: 0.125rem 0.25rem;
+  border-radius: 4px;
+  font-size: 0.5625rem;
+  font-weight: 500;
+}
+
+.matches-history-table table {
+  min-width: 48rem;
+}
+
+.matches-history-table th:nth-child(2),
+.matches-history-table td:nth-child(2) {
+  text-align: right;
+}
+
+.matches-history-table th:nth-child(3),
+.matches-history-table td:nth-child(3) {
+  text-align: center;
+  white-space: nowrap;
+}
+
 .match-score-card {
   min-width: 0;
   box-shadow: none;
@@ -73,6 +111,68 @@
 
 .match-club a {
   font-weight: 600;
+}
+
+.match-club > div {
+  min-width: 0;
+}
+
+.match-club small {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.match-club-crest {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  color: var(--foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.match-club-away .match-club-crest {
+  order: 1;
+}
+
+.match-duels table {
+  min-width: 48rem;
+}
+
+.duel-club-heading > th {
+  height: auto;
+  padding: 0.5rem 1rem;
+  background: var(--surface-subtle);
+  color: var(--foreground);
+}
+
+.duel-club-heading > th > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.duel-club-heading small {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: 0.625rem;
+  font-weight: 400;
+}
+
+.duel-goal {
+  gap: 0.25rem;
+}
+
+.duel-goal svg {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 .match-club small,
@@ -110,8 +210,53 @@
 
 .match-select {
   width: 100%;
-  min-height: 2.75rem;
-  font-size: 1rem;
+  min-height: 2rem;
+  height: 2rem;
+  font-size: 0.75rem;
+}
+
+.match-selected-club {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.match-selected-club > svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
+  color: var(--muted-foreground);
+}
+
+.match-selected-club > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.new-match-dialog .match-form {
+  gap: 0.875rem;
+}
+
+.new-match-dialog .feedback {
+  margin-bottom: 0;
+}
+
+.new-match-dialog .match-select[aria-invalid='true'] {
+  border-color: var(--destructive);
+}
+
+.new-match-dialog .modal-actions {
+  margin-top: 0;
+  padding-top: 0.875rem;
+}
+
+.new-match-dialog .modal-actions > button {
+  min-height: 2rem;
+  height: 2rem;
+  font-size: 0.75rem;
 }
 
 .match-select > span {
@@ -122,6 +267,23 @@
 
 .match-rules {
   background: var(--surface-subtle);
+  color: var(--muted-foreground);
+}
+
+.match-rules > svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.match-rules > h5 {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.match-rules > div {
+  font-size: 0.6875rem;
+  line-height: 1.5;
 }
 
 .match-rules p {
@@ -148,6 +310,52 @@
   box-shadow: none;
 }
 
+.standings-aside > div > div:first-child {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.standings-aside > div > div:first-child > div:first-child {
+  font-size: 0.8125rem;
+  letter-spacing: normal;
+}
+
+.standings-aside > div > div:first-child > div:last-child {
+  margin-top: 0.25rem;
+  font-size: 0.625rem;
+  line-height: 1.5;
+}
+
+.standings-aside > div > div:last-child {
+  padding: 1rem;
+}
+
+.standings-aside .recent-match-score {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+.recent-match-score > div {
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  white-space: nowrap;
+}
+
+.recent-match-winner {
+  font-weight: 600;
+}
+
+.standings-aside .recent-matches + a {
+  margin-top: 0.5rem;
+  padding-inline: 0;
+  font-size: 0.6875rem;
+}
+
 .recent-matches li + li {
   margin-top: 1rem;
 }
@@ -170,8 +378,32 @@
 }
 
 .standing-rules {
-  padding-left: 1rem;
-  list-style: decimal;
+  padding-left: 0;
+  list-style: none;
+}
+
+.standing-rules li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+}
+
+.standing-rules li + li {
+  margin-top: 0.5rem;
+}
+
+.standing-rule-number {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 0.625rem;
+  font-weight: 500;
 }
 
 .match-field {
@@ -254,6 +486,25 @@
 }
 
 @media (min-width: 768px) {
+  .match-club {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .match-club-home {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .match-club-away {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .match-club-away .match-club-crest {
+    order: 0;
+  }
+
   .league-page {
     padding: 2rem;
   }

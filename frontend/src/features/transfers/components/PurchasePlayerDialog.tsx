@@ -38,7 +38,7 @@ export function PurchasePlayerDialog({ playerId, onClose, onPurchased }: Purchas
   const clubError = !clubId ? 'Escolha o clube comprador.' : ''
   const dateError = !/^\d{4}-\d{2}-\d{2}$/u.test(date) ? 'Informe a data do fim da fidelidade.' : ''
   const timeError = !/^([01]\d|2[0-3]):[0-5]\d$/u.test(time) ? 'Informe a hora do fim da fidelidade.' : ''
-  let errorMessage = submission.error ? `Compra recusada. ${submission.error}` : ''
+  let errorMessage = submission.error
   if (submission.error && networkFailure) {
     errorMessage = 'Sem conexão. A compra não foi confirmada. Verifique a conexão e tente novamente.'
   }
@@ -73,7 +73,7 @@ export function PurchasePlayerDialog({ playerId, onClose, onPurchased }: Purchas
           { label: 'Custo total', value: formatMoney(result.value + result.fee), hint: 'Valor + taxa', emphasize: true },
           { label: 'Fim da fidelidade', value: formatDateTime(result.contract.loyalty_until) },
           { label: 'Contrato', value: <ContractStatusBadge status={result.contract.status} /> },
-          { label: 'Novo caixa', value: formatMoney(result.club_cash), emphasize: true },
+          { label: club ? `Novo caixa de ${club.name}` : 'Novo caixa', value: formatMoney(result.club_cash), emphasize: true },
         ]} />
         <footer className="modal-actions">
           <Button asChild variant="outline"><Link to={`/clubs/${result.club_id}`}>Ver clube <ArrowRight aria-hidden="true" /></Link></Button>
@@ -85,7 +85,7 @@ export function PurchasePlayerDialog({ playerId, onClose, onPurchased }: Purchas
     if (state.status === 'error') return <ErrorState title="Não foi possível preparar a compra" message={state.message} onRetry={refresh} />
     return (
       <form className="transfer-form" ref={formRef} onSubmit={submit} noValidate aria-busy={submission.pending}>
-        <Feedback error message={errorMessage} />
+        <Feedback error title={networkFailure ? 'Sem conexão' : 'Compra recusada'} message={errorMessage} />
         <TransferPlayerSummary player={state.data.player} />
         <div className="form-field">
           <Label htmlFor="purchase-club">Clube comprador</Label>

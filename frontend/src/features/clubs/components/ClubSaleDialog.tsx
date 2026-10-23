@@ -13,7 +13,7 @@ import { getLineup, sellPlayer } from '../services/clubService'
 import type { SaleResult, SquadPlayer } from '../types/club.types'
 import '@/features/transfers/transfers.css'
 
-export function ClubSaleDialog({ player, onClose, onSold }: { player: SquadPlayer; onClose: () => void; onSold: () => void }) {
+export function ClubSaleDialog({ player, clubName, onClose, onSold }: { player: SquadPlayer; clubName?: string; onClose: () => void; onSold: () => void }) {
   const submission = useSubmission()
   const [result, setResult] = useState<SaleResult | null>(null)
   const loadLineup = useCallback((signal: AbortSignal) => getLineup(String(player.club_id), signal), [player.club_id])
@@ -37,17 +37,17 @@ export function ClubSaleDialog({ player, onClose, onSold }: { player: SquadPlaye
     { label: 'Comissão', value: formatMoney(result.fee), hint: '10% do lucro até 10,00 + 20% do que passar; sem lucro, sem comissão' },
     { label: 'Crédito no caixa', value: formatSignedMoney(result.cash_change), hint: 'Valor de venda − multa − comissão', emphasize: true },
     { label: 'Contrato', value: <ContractStatusBadge status={result.contract_status} /> },
-    { label: 'Novo caixa', value: formatMoney(result.club_cash), emphasize: true },
+    { label: clubName ? `Novo caixa de ${clubName}` : 'Novo caixa', value: formatMoney(result.club_cash), emphasize: true },
   ] : []
 
   return (
-    <Modal title={result ? 'Venda concluída' : `Vender ${player.name}?`} description={result ? `${result.player_name} voltou a ficar livre.${isStarter ? ' O jogador saiu da escalação; escale novamente antes de jogar.' : ''} Valores em moedas, devolvidos pela API.` : 'O jogador sai do elenco do clube e volta a ficar livre.'} onClose={onClose} busy={submission.pending} className="transfer-dialog">
+    <Modal title={result ? 'Venda concluída' : `Vender ${player.name}?`} description={result ? `${result.player_name} voltou a ficar livre.${isStarter ? ' O jogador saiu da escalação; escale novamente antes de jogar.' : ''} Valores em moedas, devolvidos pela API.` : `O jogador sai do elenco de ${clubName ?? 'seu clube'} e volta a ficar livre.`} onClose={onClose} busy={submission.pending} className="transfer-dialog">
       <div className="transfer-form">
-        <Feedback message={submission.error ? `A venda foi recusada. ${submission.error}` : ''} error />
+        <Feedback title="A venda foi recusada" message={submission.error} error />
         {result ? <><CircleCheck className="transfer-success-icon" aria-hidden="true" /><TransferFacts items={facts} /></> : <>
           {lineup.state.status === 'loading' && <p role="status" className="field-hint">Consultando a escalação…</p>}
           {lineup.state.status === 'error' && <TransferNotice>Não foi possível consultar se o jogador é titular. {lineup.state.message} A venda pode ser confirmada; se for titular, ele sairá da escalação.</TransferNotice>}
-          {isStarter && <Alert className="warning-notice"><TriangleAlert aria-hidden="true" /><AlertDescription>{player.name} é titular. Ao vender, ele sai da escalação e o clube só volta a jogar depois de escalar de novo os 5 titulares.</AlertDescription></Alert>}
+          {isStarter && <Alert className="warning-notice"><TriangleAlert aria-hidden="true" /><AlertDescription>{player.name} é titular. Ao vender, ele sai da escalação e {clubName ?? 'o clube'} só volta a jogar depois de escalar de novo os 5 titulares.</AlertDescription></Alert>}
           <TransferPlayerSummary player={player} />
           {player.contract ? <TransferFacts items={[
             { label: 'Valor de compra', value: formatMoney(player.contract.purchase_value) },

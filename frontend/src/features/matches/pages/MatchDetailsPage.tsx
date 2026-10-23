@@ -33,7 +33,7 @@ export function MatchDetailsPage() {
         <MatchScoreCard match={state.data} details />
         <MatchFieldPreview match={state.data} />
         <section className="club-panel">
-          <header className="league-panel-heading"><div><h2>Duelos</h2><p>Os 3 ataques do mandante e depois os 3 do visitante. Valores históricos, sem recálculo.</p></div></header>
+          <header className="league-panel-heading"><div><h2>Duelos</h2><p>Os 3 ataques do mandante e depois os 3 do visitante. Os jogadores de linha vão do 1º (o mais recuado) ao 4º (o mais avançado), pela ordem do elenco: o 4º enfrenta o goleiro, o 3º ataca o 1º e o 2º ataca o 2º.</p></div></header>
           <MatchDuelsTable match={state.data} />
         </section>
         <p className="club-footnote">Nomes, posições, condições, formações e valores são os gravados na partida. Deslize a tabela para consultar todos os dados dos seis duelos.</p>

@@ -65,13 +65,13 @@ function LineupEditor({ club, initial }: { club: ClubDetails; initial: ClubLineu
       <section className="club-panel lineup-editor">
         <header className="club-panel-header lineup-title"><div><h2>Titulares</h2><p>1 goleiro e 4 jogadores de linha, na formação escolhida. Salvar troca os 5 de uma vez.</p></div><Badge variant="outline" className={`status-badge ${saved.complete ? 'status-apto' : 'status-mal_condicionado'}`}>{saved.complete ? 'Completa' : 'Incompleta'}</Badge></header>
         <div className="lineup-notices">
-          <Feedback error message={submission.error ? `A escalação foi recusada. ${submission.error}` : ''} />
+          <Feedback error title="A escalação foi recusada" message={submission.error} />
           {!saved.complete && <Alert className="warning-notice"><TriangleAlert aria-hidden="true" /><AlertDescription>Escalação incompleta: {club.name} não pode jogar partidas. Escolha um titular elegível para cada uma das 5 vagas e salve a escalação.</AlertDescription></Alert>}
           {!synchronized && <><p role="alert">Não foi possível atualizar os dados após a recusa. Consulte novamente antes de salvar.</p><Button variant="outline" disabled={submission.pending} onClick={() => void submission.run(synchronize)}>Atualizar escalação</Button></>}
         </div>
         <FormationSelector value={draft.formation} disabled={submission.pending || !synchronized} onChange={changeFormation} />
         <LineupSlots slots={slots} ids={draft.ids} players={players} disabled={submission.pending || !synchronized} onChange={(index, value) => setDraft(current => ({ ...current, ids: current.ids.map((id, slot) => slot === index ? value : id) }))} />
-        {unfit.length > 0 && <Alert className="warning-notice lineup-warning"><TriangleAlert aria-hidden="true" /><AlertDescription>{unfit.map(player => player.name).join(' e ')}: podem jogar, mas cada atributo vale 15% a menos durante a partida.</AlertDescription></Alert>}
+        {unfit.length > 0 && <Alert className="warning-notice lineup-warning"><TriangleAlert aria-hidden="true" /><AlertDescription>{unfit.map(player => player.name).join(' e ')} {unfit.length === 1 ? 'está mal condicionado. Pode jogar' : 'estão mal condicionados. Podem jogar'}, mas cada atributo vale 15% a menos durante a partida.</AlertDescription></Alert>}
         <footer className="lineup-actions">
           <p>{!valid ? 'Escolha um titular para cada vaga para salvar.' : 'A escalação vale até ser trocada. Titular vendido ou DOENTE sai dela; escale novamente antes de jogar.'}</p>
           <Button variant="outline" disabled={submission.pending} onClick={() => setDraft(lineupDraft(saved))}>Cancelar</Button>

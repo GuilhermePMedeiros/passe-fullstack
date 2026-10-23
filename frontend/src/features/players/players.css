@@ -599,6 +599,27 @@
   line-height: 1.5;
 }
 
+.preview-note:has(.attribute-legend-value) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+}
+
+.attribute-legend-value::before,
+.attribute-legend-potential::before {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.25rem;
+  margin-right: 0.25rem;
+  border-radius: 1px;
+  background: var(--primary);
+  content: '';
+}
+
+.attribute-legend-potential::before {
+  opacity: 0.25;
+}
+
 .preview-placeholder {
   display: grid;
   min-height: 9rem;
@@ -706,7 +727,13 @@
 }
 
 .warning-notice > svg {
+  width: 0.875rem;
+  height: 0.875rem;
   color: var(--warning);
+}
+
+.warning-notice > svg + div {
+  transform: none;
 }
 
 .player-details-sheet {
@@ -866,6 +893,16 @@
 
 .player-created-modal {
   padding-top: 3.75rem;
+}
+
+.created-result .player-facts > div:first-child {
+  background: var(--surface-subtle);
+}
+
+.created-result .player-facts > div:first-child dt,
+.created-result .player-facts > div:first-child dd {
+  color: var(--foreground);
+  font-weight: 600;
 }
 
 .created-success-icon {

@@ -39,7 +39,7 @@ export function PlayerAttributesPreview({ values, potential, preview = false }: 
           </div>
         )
       })}
-      <p className="preview-note">{preview ? 'A prévia só desenha os valores digitados; não calcula overall nem valor base.' : `Valor do atributo · Até o potencial (${potential ?? '—'}), que nenhum atributo passa.`}</p>
+      <p className="preview-note">{preview ? 'A prévia só desenha os valores digitados; não calcula overall nem valor base.' : <><span className="attribute-legend-value">Valor do atributo</span><span className="attribute-legend-potential">Até o potencial ({potential ?? '—'}), que nenhum atributo passa.</span></>}</p>
     </section>
   )
 }

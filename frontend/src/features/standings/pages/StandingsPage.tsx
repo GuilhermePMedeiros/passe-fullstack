@@ -2,7 +2,8 @@ import { useCallback, useLayoutEffect, useRef } from 'react'
 import { Link } from 'react-router'
 import { ArrowRight, ListOrdered, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/ListStates'
 import { useClubQuery } from '@/features/clubs/hooks/useClubQuery'
 import { listMatches } from '@/features/matches/services/matchService'
@@ -41,19 +42,19 @@ export function StandingsPage() {
         </section>
         <aside className="standings-aside">
           <Card>
-            <CardHeader><CardTitle>Últimas partidas</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Últimas partidas</CardTitle><CardDescription>Da mais recente para a mais antiga.</CardDescription></CardHeader>
             <CardContent>
               {matches.state.status === 'loading' && <LoadingState label="Carregando últimas partidas…" />}
               {matches.state.status === 'error' && <ErrorState message={matches.state.message} onRetry={matches.refresh} />}
-              {matches.state.status === 'success' && (matches.state.data.length ? <ul className="recent-matches">{matches.state.data.slice(0, 3).map(match => (
-                <li key={match.id}><Link to={`/matches/${match.id}`}><time dateTime={match.played_at}>{formatDateTime(match.played_at)}</time><span>{match.home.club_name} <strong>{match.home.goals} × {match.away.goals}</strong> {match.away.club_name}</span></Link></li>
+              {matches.state.status === 'success' && (matches.state.data.length ? <ul className="recent-matches">{matches.state.data.slice(0, 2).map(match => (
+                <li key={match.id}><Link to={`/matches/${match.id}`}><time dateTime={match.played_at}>{formatDateTime(match.played_at)}</time><span className="recent-match-score"><span className={match.result === 'MANDANTE' ? 'recent-match-winner' : undefined}>{match.home.club_name}</span><Badge variant="secondary">{match.home.goals} × {match.away.goals}</Badge><span className={match.result === 'VISITANTE' ? 'recent-match-winner' : undefined}>{match.away.club_name}</span></span></Link></li>
               ))}</ul> : <p className="field-hint">Nenhuma partida jogada ainda.</p>)}
               <Button asChild variant="link"><Link to="/matches">Ver todas as partidas <ArrowRight aria-hidden="true" /></Link></Button>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Ordem da tabela</CardTitle></CardHeader>
-            <CardContent><ol className="standing-rules"><li>Mais pontos</li><li>Maior saldo de gols</li><li>Mais gols marcados</li><li>Nome do clube, de A a Z</li></ol></CardContent>
+            <CardHeader><CardTitle>Ordem da tabela</CardTitle><CardDescription>Critérios de classificação, nesta ordem.</CardDescription></CardHeader>
+            <CardContent><ol className="standing-rules" role="list">{['Mais pontos', 'Maior saldo de gols', 'Mais gols marcados', 'Nome do clube, de A a Z'].map((rule, index) => <li key={rule}><span className="standing-rule-number" aria-hidden="true">{index + 1}</span>{rule}</li>)}</ol></CardContent>
           </Card>
         </aside>
       </div>

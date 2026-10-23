@@ -143,9 +143,15 @@ kbd { border: 1px solid var(--border); border-radius: 3px; background: var(--mut
   .league-statistics dl > div + div::before { content: '·'; margin-right: 0.5rem; }
   .workflow-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-@media (min-width: 1200px) {
-  .app-main { padding: 4rem 3rem; }
-  .home-panel { min-height: 43.75rem; padding: 4rem 0.25rem 2rem; }
+@media (min-width: 1024px) {
+  .app-main { padding: 0; }
+  .home-panel {
+    width: 75rem;
+    max-width: none;
+    min-height: 43.75rem;
+    padding: 4rem 0.25rem 2rem;
+    zoom: min(1, calc(100vw / 1440px), calc(100svh / 900px));
+  }
   .home-hero { padding-inline: 5rem; }
   .football-field { display: block; }
   .workflow-navigation { margin-top: 4rem; }

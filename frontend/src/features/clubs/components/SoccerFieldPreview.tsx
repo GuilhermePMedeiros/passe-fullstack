@@ -18,7 +18,7 @@ export function SoccerFieldPreview({ slots, ids, players }: { slots: LineupSlot[
           const player = players.find(item => String(item.id) === ids[slot.index])
           return <div className="field-player" key={slot.key}>
             <span className={player ? 'field-marker' : 'field-marker vacant'}>{player ? getInitials(player.name) : '+'}</span>
-            <span>{player ? player.name.split(' ').at(-1) : slot.label}</span>
+            <span>{player ? player.name : slot.label}</span>
             {player?.condition === 'MAL_CONDICIONADO' && <small>Mal condicionado</small>}
           </div>
         })}</div>
