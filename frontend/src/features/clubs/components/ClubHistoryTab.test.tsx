@@ -47,11 +47,14 @@ describe('histórico de transações', () => {
     prepare('&type=VENDA&player_id=2')
     await screen.findByText('Jogador não encontrado.')
     expect(screen.getByRole('combobox', { name: 'Todos os jogadores' }).textContent).toContain('Nome Histórico')
-    expect(screen.getByRole('combobox', { name: 'Todos os tipos' }).textContent).toContain('Venda')
+    expect((screen.getByRole('checkbox', { name: 'Venda' }) as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByRole('checkbox', { name: 'Compra' }) as HTMLInputElement).checked).toBe(false)
     expect(screen.queryByText('Total recebido em vendas')).toBeNull()
     expect((screen.getByRole('button', { name: 'Exportar CSV' }) as HTMLButtonElement).disabled).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: 'Limpar filtros do histórico' }))
     expect(await screen.findByText('Total recebido em vendas')).toBeTruthy()
+    expect((screen.getByRole('checkbox', { name: 'Venda' }) as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByRole('checkbox', { name: 'Compra' }) as HTMLInputElement).checked).toBe(true)
   })
 
   it('mostra vazio com os totais zero da API e permite exportar o cabeçalho', async () => {
